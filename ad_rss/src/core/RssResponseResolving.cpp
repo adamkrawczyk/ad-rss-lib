@@ -23,8 +23,9 @@ RssResponseResolving::RssResponseResolving()
 }
 
 bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot,
-                                                 state::ProperResponse &response)
+                                                 state::ProperResponse &response, std::string &issueDescription)
 {
+  issueDescription.append("test message");
   if (!withinValidInputRange(currentStateSnapshot))
   {
     spdlog::error("RssResponseResolving::provideProperResponse>> Invalid input");

@@ -7,6 +7,7 @@
 // ----------------- END LICENSE BLOCK -----------------------------------
 
 #include "ad/rss/core/RssSituationExtraction.hpp"
+#include "ad/rss/helpers/RssLogMessage.hpp"
 #include <algorithm>
 #include "../world/RssSituationCoordinateSystemConversion.hpp"
 #include "../world/RssSituationIdProvider.hpp"
@@ -525,10 +526,13 @@ bool RssSituationExtraction::mergeSituations(situation::Situation const &otherSi
 }
 
 bool RssSituationExtraction::extractSituations(world::WorldModel const &worldModel,
-                                               situation::SituationSnapshot &situationSnapshot)
+                                               situation::SituationSnapshot &situationSnapshot, helpers::RssLogMessage &logMessage)
 {
+  logMessage.logMessage("RssSituationExtraction::extractSituation>> Invalid input {}", worldModel);
   if (!withinValidInputRange(worldModel))
   {
+    // const auto log = ();
+    logMessage.logMessage("RssSituationExtraction::extractSituation>> Invalid input {}", worldModel);
     spdlog::error("RssSituationExtraction::extractSituation>> Invalid input {}", worldModel);
     return false;
   }

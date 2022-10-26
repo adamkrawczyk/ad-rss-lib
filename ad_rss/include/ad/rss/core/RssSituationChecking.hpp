@@ -64,7 +64,7 @@ public:
    * @return true if the situations could be analyzed, false if an error occurred during evaluation.
    */
   bool checkSituations(situation::SituationSnapshot const &situationSnapshot,
-                       state::RssStateSnapshot &rssStateSnapshot);
+                       state::RssStateSnapshot &rssStateSnapshot, std::string &issueDescription);
 
 private:
   /*!
@@ -91,6 +91,7 @@ private:
   std::unique_ptr<ad::rss::situation::RssStructuredSceneNonIntersectionChecker> mNonIntersectionChecker;
   std::unique_ptr<ad::rss::situation::RssUnstructuredSceneChecker> mUnstructuredSceneChecker;
   world::TimeIndex mCurrentTimeIndex{0u};
+  std::string logMessage;
 };
 } // namespace core
 } // namespace rss

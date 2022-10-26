@@ -10,6 +10,7 @@
 #include "ad/rss/core/RssResponseResolving.hpp"
 #include "ad/rss/core/RssSituationChecking.hpp"
 #include "ad/rss/core/RssSituationExtraction.hpp"
+#include "ad/rss/helpers/RssLogMessage.hpp"
 #include "spdlog/fmt/ostr.h"
 #include "spdlog/spdlog.h"
 
@@ -24,6 +25,7 @@ RssCheck::RssCheck()
     mResponseResolving = std::unique_ptr<RssResponseResolving>(new RssResponseResolving());
     mSituationChecking = std::unique_ptr<RssSituationChecking>(new RssSituationChecking());
     mSituationExtraction = std::unique_ptr<RssSituationExtraction>(new RssSituationExtraction());
+    mLogMessage = std::unique_ptr<helpers::RssLogMessage>(new helpers::RssLogMessage());
   }
   catch (...)
   {
@@ -31,6 +33,7 @@ RssCheck::RssCheck()
     mResponseResolving = nullptr;
     mSituationChecking = nullptr;
     mSituationExtraction = nullptr;
+    mLogMessage = nullptr;
   }
 }
 
@@ -41,8 +44,10 @@ RssCheck::~RssCheck()
 bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
                                        situation::SituationSnapshot &situationSnapshot,
                                        state::RssStateSnapshot &rssStateSnapshot,
-                                       state::ProperResponse &properResponse)
+                                       state::ProperResponse &properResponse,
+                                       std::string &issueDescription)
 {
+  issueDescription.append("test message; ");
   bool result = false;
   // global try catch block to ensure this library call doesn't throw an exception
   try
@@ -50,30 +55,48 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
     if (!static_cast<bool>(mResponseResolving) || !static_cast<bool>(mSituationChecking)
         || !static_cast<bool>(mSituationExtraction))
     {
-      spdlog::critical("RssCheck::calculateProperResponse>> object not properly initialized");
+      const auto log = "RssCheck::calculateProperResponse>> object not properly initialized";
+      mLogMessage->logMessage(log);
+      spdlog::critical(log);
       return false;
     }
 
-    result = mSituationExtraction->extractSituations(worldModel, situationSnapshot);
+    result = mSituationExtraction->extractSituations(worldModel, situationSnapshot, *mLogMessage);
+    issueDescription.append(mLogMessage->getLogMessage());
 
     if (result)
     {
-      result = mSituationChecking->checkSituations(situationSnapshot, rssStateSnapshot);
+      result = mSituationChecking->checkSituations(situationSnapshot, rssStateSnapshot, issueDescription);
     }
 
     if (result)
     {
-      result = mResponseResolving->provideProperResponse(rssStateSnapshot, properResponse);
+      result = mResponseResolving->provideProperResponse(rssStateSnapshot, properResponse, issueDescription);
     }
   }
   // LCOV_EXCL_START: unreachable code, keep to be on the safe side
   catch (...)
   {
-    spdlog::critical("RssCheck::calculateProperResponse>> Exception caught");
+    // auto log = ;
+    // mLogMessage->logMessage(log);
+    spdlog::critical("RssCheck::calculateProperResponse>> exception caught");
     result = false;
   }
   // LCOV_EXCL_STOP: unreachable code, keep to be on the safe side
+  if(!result && issueDescription.empty())
+  {
+    issueDescription = "RssCheck::calculateProperResponse>> Not described issue occurred; ";
+  }
   return result;
+}
+
+bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
+                                       situation::SituationSnapshot &situationSnapshot,
+                                       state::RssStateSnapshot &rssStateSnapshot,
+                                       state::ProperResponse &properResponse)
+{
+  std::string issueDescription;
+return calculateProperResponse(worldModel, situationSnapshot, rssStateSnapshot, properResponse, issueDescription);
 }
 
 bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel, state::ProperResponse &properResponse)

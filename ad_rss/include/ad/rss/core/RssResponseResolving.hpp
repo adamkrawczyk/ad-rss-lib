@@ -53,7 +53,7 @@ public:
    * @return true if response and acceleration restriction could be calculated, false otherwise
    * If false is returned the internal state has not been updated
    */
-  bool provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot, state::ProperResponse &response);
+  bool provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot, state::ProperResponse &response, std::string &issueDescription);
 
 private:
   /*!
@@ -103,6 +103,8 @@ private:
   void combineState(state::LateralRssState const &state,
                     state::LateralResponse &response,
                     physics::AccelerationRange &accelerationRange);
+
+  std::string logMessage;
 };
 
 } // namespace core

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "ad/rss/helpers/RssLogMessage.hpp"
 #include "ad/rss/situation/SituationSnapshot.hpp"
 #include "ad/rss/world/WorldModel.hpp"
 
@@ -63,7 +64,7 @@ public:
    *
    * @return true if the situations could be created, false if there was an error during the operation.
    */
-  bool extractSituations(world::WorldModel const &worldModel, situation::SituationSnapshot &situationSnapshot);
+  bool extractSituations(world::WorldModel const &worldModel, situation::SituationSnapshot &situationSnapshot, ad::rss::helpers::RssLogMessage &logMessage);
 
 private:
   void calcluateRelativeLongitudinalPosition(physics::MetricRange const &egoMetricRange,
@@ -107,6 +108,7 @@ private:
   bool mergeSituations(situation::Situation const &otherSituation, situation::Situation &mergedSituation);
 
   std::unique_ptr<ad::rss::world::RssSituationIdProvider> mSituationIdProvider;
+  ad::rss::helpers::RssLogMessage logMessage_;
 };
 
 } // namespace core
