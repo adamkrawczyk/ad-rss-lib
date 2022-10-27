@@ -74,9 +74,9 @@ public:
    * @return return true if the proper response could be calculated, false otherwise.
    */
   bool calculateProperResponse(world::WorldModel const &worldModel,
-                                       situation::SituationSnapshot &situationSnapshot,
-                                       state::RssStateSnapshot &rssStateSnapshot,
-                                       state::ProperResponse &properResponse);
+                               situation::SituationSnapshot &situationSnapshot,
+                               state::RssStateSnapshot &rssStateSnapshot,
+                               state::ProperResponse &properResponse);
 
   /**
    * @brief calculateProperResponse

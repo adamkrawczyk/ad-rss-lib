@@ -64,7 +64,9 @@ public:
    *
    * @return true if the situations could be created, false if there was an error during the operation.
    */
-  bool extractSituations(world::WorldModel const &worldModel, situation::SituationSnapshot &situationSnapshot, ad::rss::helpers::RssLogMessage &logMessage);
+  bool extractSituations(world::WorldModel const &worldModel,
+                         situation::SituationSnapshot &situationSnapshot,
+                         ad::rss::helpers::RssLogMessage &logMessage);
 
 private:
   void calcluateRelativeLongitudinalPosition(physics::MetricRange const &egoMetricRange,

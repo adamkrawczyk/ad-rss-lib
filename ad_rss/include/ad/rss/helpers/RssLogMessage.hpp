@@ -20,34 +20,30 @@
 /*!
  * @brief namespace ad
  */
-namespace ad
-{
+namespace ad {
 /*!
  * @brief namespace rss
  */
-namespace rss
-{
+namespace rss {
 
 /*!
  * @brief namespace helpers
  */
-namespace helpers
-{
+namespace helpers {
 
 class RssLogMessage
 {
 public:
   std::string getLogMessage();
-  void logMessage(const std::string & msg);
-  void logMessage(const std::ostream & msg);
+  void logMessage(const std::string &msg);
+  void logMessage(const std::ostream &msg);
 
-  template<typename First, typename ... Strings>
-  void logMessage(First arg, const Strings & ... rest)
+  template <typename First, typename... Strings> void logMessage(First arg, const Strings &... rest)
   {
     std::stringstream ss;
     ss << arg;
     log_message_ = log_message_ + "\n" + ss.str();
-    logMessage(rest ...);
+    logMessage(rest...);
   }
 
 private:
@@ -57,9 +53,7 @@ private:
   {
     log_message_ = log_message_ + "\n";
   }
-
 };
-
 
 } // namespace helpers
 } // namespace rss

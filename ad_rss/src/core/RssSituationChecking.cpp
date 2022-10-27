@@ -161,7 +161,8 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
 }
 
 bool RssSituationChecking::checkSituations(situation::SituationSnapshot const &situationSnapshot,
-                                           state::RssStateSnapshot &rssStateSnapshot, std::string &issueDescription)
+                                           state::RssStateSnapshot &rssStateSnapshot,
+                                           std::string &issueDescription)
 {
   issueDescription.append("test");
   if (!withinValidInputRange(situationSnapshot))

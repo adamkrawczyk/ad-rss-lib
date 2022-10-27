@@ -47,7 +47,6 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
                                        state::ProperResponse &properResponse,
                                        std::string &issueDescription)
 {
-  issueDescription.append("test message; ");
   bool result = false;
   // global try catch block to ensure this library call doesn't throw an exception
   try
@@ -62,7 +61,6 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
     }
 
     result = mSituationExtraction->extractSituations(worldModel, situationSnapshot, *mLogMessage);
-    issueDescription.append(mLogMessage->getLogMessage());
 
     if (result)
     {
@@ -73,6 +71,7 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
     {
       result = mResponseResolving->provideProperResponse(rssStateSnapshot, properResponse, issueDescription);
     }
+    issueDescription.append(mLogMessage->getLogMessage());
   }
   // LCOV_EXCL_START: unreachable code, keep to be on the safe side
   catch (...)
@@ -83,7 +82,7 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
     result = false;
   }
   // LCOV_EXCL_STOP: unreachable code, keep to be on the safe side
-  if(!result && issueDescription.empty())
+  if (!result && issueDescription.empty())
   {
     issueDescription = "RssCheck::calculateProperResponse>> Not described issue occurred; ";
   }
@@ -96,7 +95,7 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
                                        state::ProperResponse &properResponse)
 {
   std::string issueDescription;
-return calculateProperResponse(worldModel, situationSnapshot, rssStateSnapshot, properResponse, issueDescription);
+  return calculateProperResponse(worldModel, situationSnapshot, rssStateSnapshot, properResponse, issueDescription);
 }
 
 bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel, state::ProperResponse &properResponse)

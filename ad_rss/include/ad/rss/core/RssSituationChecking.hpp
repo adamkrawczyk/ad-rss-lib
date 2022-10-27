@@ -64,7 +64,8 @@ public:
    * @return true if the situations could be analyzed, false if an error occurred during evaluation.
    */
   bool checkSituations(situation::SituationSnapshot const &situationSnapshot,
-                       state::RssStateSnapshot &rssStateSnapshot, std::string &issueDescription);
+                       state::RssStateSnapshot &rssStateSnapshot,
+                       std::string &issueDescription);
 
 private:
   /*!

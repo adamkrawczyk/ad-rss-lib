@@ -12,19 +12,21 @@ namespace ad {
 namespace rss {
 namespace helpers {
 
-void  RssLogMessage::logMessage(const std::string &msg){
-    log_message_ = log_message_ + "\n" + msg;
+void RssLogMessage::logMessage(const std::string &msg)
+{
+  log_message_ = log_message_ + "\n" + msg;
 }
 
-void RssLogMessage::logMessage(const std::ostream &msg){
-    std::stringstream ss;
-    ss << msg.rdbuf();
-    log_message_ = log_message_ + "\n" + ss.str();
-
+void RssLogMessage::logMessage(const std::ostream &msg)
+{
+  std::stringstream ss;
+  ss << msg.rdbuf();
+  log_message_ = log_message_ + "\n" + ss.str();
 }
 
-std::string RssLogMessage::getLogMessage(){
-    return log_message_;
+std::string RssLogMessage::getLogMessage()
+{
+  return log_message_;
 }
 
 } // namespace helpers

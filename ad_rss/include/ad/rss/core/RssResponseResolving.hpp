@@ -53,7 +53,9 @@ public:
    * @return true if response and acceleration restriction could be calculated, false otherwise
    * If false is returned the internal state has not been updated
    */
-  bool provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot, state::ProperResponse &response, std::string &issueDescription);
+  bool provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot,
+                             state::ProperResponse &response,
+                             std::string &issueDescription);
 
 private:
   /*!
