@@ -12,7 +12,7 @@
 #pragma once
 
 #include <memory>
-#include "ad/rss/helpers/RssLogMessage.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/situation/SituationSnapshot.hpp"
 #include "ad/rss/state/ProperResponse.hpp"
 #include "ad/rss/state/RssStateSnapshot.hpp"
@@ -99,7 +99,7 @@ private:
   std::unique_ptr<RssResponseResolving> mResponseResolving;
   std::unique_ptr<RssSituationChecking> mSituationChecking;
   std::unique_ptr<RssSituationExtraction> mSituationExtraction;
-  std::unique_ptr<helpers::RssLogMessage> mLogMessage;
+  ad::rss::helpers::RssLogger mLogger;
 };
 
 } // namespace core

@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "ad/rss/helpers/RssLogMessage.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/situation/SituationSnapshot.hpp"
 #include "ad/rss/world/WorldModel.hpp"
 
@@ -66,7 +66,7 @@ public:
    */
   bool extractSituations(world::WorldModel const &worldModel,
                          situation::SituationSnapshot &situationSnapshot,
-                         ad::rss::helpers::RssLogMessage &logMessage);
+                         ad::rss::helpers::RssLogger &logMessage);
 
 private:
   void calcluateRelativeLongitudinalPosition(physics::MetricRange const &egoMetricRange,
@@ -110,7 +110,7 @@ private:
   bool mergeSituations(situation::Situation const &otherSituation, situation::Situation &mergedSituation);
 
   std::unique_ptr<ad::rss::world::RssSituationIdProvider> mSituationIdProvider;
-  ad::rss::helpers::RssLogMessage logMessage_;
+  ad::rss::helpers::RssLogger mRssLogger;
 };
 
 } // namespace core

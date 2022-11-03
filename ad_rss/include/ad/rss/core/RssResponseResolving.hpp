@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/state/ProperResponse.hpp"
 #include "ad/rss/state/RssStateSnapshot.hpp"
 
@@ -55,7 +56,7 @@ public:
    */
   bool provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot,
                              state::ProperResponse &response,
-                             std::string &issueDescription);
+                             helpers::RssLogger &logMessage);
 
 private:
   /*!
@@ -105,8 +106,7 @@ private:
   void combineState(state::LateralRssState const &state,
                     state::LateralResponse &response,
                     physics::AccelerationRange &accelerationRange);
-
-  std::string logMessage;
+  ad::rss::helpers::RssLogger mRssLogger;
 };
 
 } // namespace core

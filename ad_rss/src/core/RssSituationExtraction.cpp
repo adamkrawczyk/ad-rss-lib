@@ -10,7 +10,7 @@
 #include <algorithm>
 #include "../world/RssSituationCoordinateSystemConversion.hpp"
 #include "../world/RssSituationIdProvider.hpp"
-#include "ad/rss/helpers/RssLogMessage.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/world/WorldModelValidInputRange.hpp"
 #include "spdlog/fmt/ostr.h"
 #include "spdlog/spdlog.h"
@@ -527,14 +527,12 @@ bool RssSituationExtraction::mergeSituations(situation::Situation const &otherSi
 
 bool RssSituationExtraction::extractSituations(world::WorldModel const &worldModel,
                                                situation::SituationSnapshot &situationSnapshot,
-                                               helpers::RssLogMessage &logMessage)
+                                               helpers::RssLogger &logMessage)
 {
-  logMessage.logMessage("RssSituationExtraction::extractSituation>> Invalid input {}", worldModel);
+  logMessage_ = logMessage;
   if (!withinValidInputRange(worldModel))
   {
-    // const auto log = ();
-    logMessage.logMessage("RssSituationExtraction::extractSituation>> Invalid input {}", worldModel);
-    spdlog::error("RssSituationExtraction::extractSituation>> Invalid input {}", worldModel);
+    logMessage.logError("RssSituationExtraction::extractSituation>> Invalid input ", worldModel);
     return false;
   }
 

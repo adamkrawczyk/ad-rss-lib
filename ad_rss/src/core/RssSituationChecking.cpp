@@ -162,9 +162,9 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
 
 bool RssSituationChecking::checkSituations(situation::SituationSnapshot const &situationSnapshot,
                                            state::RssStateSnapshot &rssStateSnapshot,
-                                           std::string &issueDescription)
+                                           helpers::RssLogger &logMessage)
 {
-  issueDescription.append("test");
+  logMessage.logMessage("test from check situations");
   if (!withinValidInputRange(situationSnapshot))
   {
     spdlog::error("RssSituationChecking::checkSituations>> Invalid input {}", situationSnapshot);
