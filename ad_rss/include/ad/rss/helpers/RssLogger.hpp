@@ -34,28 +34,27 @@ namespace helpers {
 class RssLogger
 {
 public:
+  // /*!
+  //  * @brief constructor
+  //  */
+  // RssLogger() = default;
+  // ~RssLogger() = default;
 
-  /*!
-   * @brief constructor
-   */
-  RssLogger() = default;
-  ~RssLogger() = default;
+  // /*!
+  //  * @brief Copy constructor
+  //  */
+  // RssLogger(RssLogger const &other);
 
-  /*!
-   * @brief Copy constructor
-   */
-  RssLogger(RssLogger const &other);
-
-  /*!
-   * @brief Move constructor
-   */
-  RssLogger(RssLogger&& other);
+  // /*!
+  //  * @brief Move constructor
+  //  */
+  // RssLogger(RssLogger&& other);
 
   std::string getMessage();
   void appendMessage(const std::string &msg);
   void appendMessage(const std::ostream &msg);
 
-  template <typename First, typename... Rest> void appendMessage(First arg, const Rest &... rest)
+  template <typename First, typename... Rest> void appendMessage(First arg, const Rest &...rest)
   {
     std::stringstream ss;
     ss << arg;
@@ -63,7 +62,7 @@ public:
     appendMessage(rest...);
   }
 
-  // Log message to console and log_message_ with spdlog different level of severity
+  // Log message to console and variable with spdlog different level of severity
   template <typename... Args> void logError(Args... args)
   {
     appendMessage(args...);

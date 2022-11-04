@@ -49,7 +49,7 @@ public:
   /*!
    * @brief constructor
    */
-  RssSituationChecking();
+  RssSituationChecking(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /*!
    * @brief destructor
@@ -65,8 +65,7 @@ public:
    * @return true if the situations could be analyzed, false if an error occurred during evaluation.
    */
   bool checkSituations(situation::SituationSnapshot const &situationSnapshot,
-                       state::RssStateSnapshot &rssStateSnapshot,
-                       helpers::RssLogger &logMessage);
+                       state::RssStateSnapshot &rssStateSnapshot);
 
 private:
   /*!
@@ -93,7 +92,7 @@ private:
   std::unique_ptr<ad::rss::situation::RssStructuredSceneNonIntersectionChecker> mNonIntersectionChecker;
   std::unique_ptr<ad::rss::situation::RssUnstructuredSceneChecker> mUnstructuredSceneChecker;
   world::TimeIndex mCurrentTimeIndex{0u};
-  ad::rss::helpers::RssLogger mRssLogger;
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 } // namespace core
 } // namespace rss

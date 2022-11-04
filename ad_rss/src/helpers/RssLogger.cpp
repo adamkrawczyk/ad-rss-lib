@@ -12,18 +12,18 @@ namespace ad {
 namespace rss {
 namespace helpers {
 
-// Copy constructor
-RssLogger::RssLogger(RssLogger const &other)
-{
-  log_message_.append(other.log_message_);
-}
+// // Copy constructor
+// RssLogger::RssLogger(RssLogger const &other)
+// {
+//   log_message_.append(other.log_message_);
+// }
 
-// Move constructor
-RssLogger::RssLogger(RssLogger&& other)
-{
-  log_message_ = other.log_message_;
-  other.log_message_ = "";
-}
+// // Move constructor
+// RssLogger::RssLogger(RssLogger&& other)
+// {
+//   log_message_ = other.log_message_;
+//   other.log_message_ = "";
+// }
 
 void RssLogger::appendMessage(const std::string &msg)
 {

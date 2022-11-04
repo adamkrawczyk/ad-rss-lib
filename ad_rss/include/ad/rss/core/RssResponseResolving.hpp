@@ -43,7 +43,7 @@ public:
   /**
    * @brief constructor
    */
-  RssResponseResolving();
+  RssResponseResolving(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /**
    * @brief Calculate the proper response out of the current responses
@@ -54,9 +54,7 @@ public:
    * @return true if response and acceleration restriction could be calculated, false otherwise
    * If false is returned the internal state has not been updated
    */
-  bool provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot,
-                             state::ProperResponse &response,
-                             helpers::RssLogger &logMessage);
+  bool provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot, state::ProperResponse &response);
 
 private:
   /*!
@@ -106,7 +104,7 @@ private:
   void combineState(state::LateralRssState const &state,
                     state::LateralResponse &response,
                     physics::AccelerationRange &accelerationRange);
-  ad::rss::helpers::RssLogger mRssLogger;
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 
 } // namespace core

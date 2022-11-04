@@ -22,10 +22,10 @@ RssCheck::RssCheck()
 {
   try
   {
-    mResponseResolving = std::unique_ptr<RssResponseResolving>(new RssResponseResolving());
-    mSituationChecking = std::unique_ptr<RssSituationChecking>(new RssSituationChecking());
-    mSituationExtraction = std::unique_ptr<RssSituationExtraction>(new RssSituationExtraction());
-    mLogger = helpers::RssLogger();
+    mLogger = std::shared_ptr<helpers::RssLogger>(new helpers::RssLogger());
+    mResponseResolving = std::unique_ptr<RssResponseResolving>(new RssResponseResolving(mLogger));
+    mSituationChecking = std::unique_ptr<RssSituationChecking>(new RssSituationChecking(mLogger));
+    mSituationExtraction = std::unique_ptr<RssSituationExtraction>(new RssSituationExtraction(mLogger));
   }
   catch (...)
   {
@@ -53,28 +53,28 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
     if (!static_cast<bool>(mResponseResolving) || !static_cast<bool>(mSituationChecking)
         || !static_cast<bool>(mSituationExtraction))
     {
-      mLogger.logCritical("RssCheck::calculateProperResponse>> object not properly initialized");
+      mLogger->logCritical("RssCheck::calculateProperResponse>> object not properly initialized");
       return false;
     }
 
-    result = mSituationExtraction->extractSituations(worldModel, situationSnapshot, mLogger);
+    result = mSituationExtraction->extractSituations(worldModel, situationSnapshot);
 
     if (result)
     {
-      result = mSituationChecking->checkSituations(situationSnapshot, rssStateSnapshot, mLogger);
+      result = mSituationChecking->checkSituations(situationSnapshot, rssStateSnapshot);
     }
 
     if (result)
     {
-      result = mResponseResolving->provideProperResponse(rssStateSnapshot, properResponse, mLogger);
+      result = mResponseResolving->provideProperResponse(rssStateSnapshot, properResponse);
     }
     // Send the message to the output
-    issueDescription = mLogger.getMessage();
+    issueDescription = mLogger->getMessage();
   }
   // LCOV_EXCL_START: unreachable code, keep to be on the safe side
   catch (...)
   {
-    mLogger.logCritical("RssCheck::calculateProperResponse>> exception caught");
+    mLogger->logCritical("RssCheck::calculateProperResponse>> exception caught");
     result = false;
   }
   // LCOV_EXCL_STOP: unreachable code, keep to be on the safe side

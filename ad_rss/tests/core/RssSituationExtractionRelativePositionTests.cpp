@@ -40,11 +40,11 @@ void performCalculateRelativePositionTest(Distance minA,
   vehicleBLatMetricRange.maximum = maxB;
   vehicleBLonMetricRange = vehicleBLatMetricRange;
 
-  situationExtraction.calcluateRelativeLongitudinalPosition(vehicleALonMetricRange,
+  situationExtraction.calculateRelativeLongitudinalPosition(vehicleALonMetricRange,
                                                             vehicleBLonMetricRange,
                                                             relativePosition.longitudinalPosition,
                                                             relativePosition.longitudinalDistance);
-  situationExtraction.calcluateRelativeLateralPosition(
+  situationExtraction.calculateRelativeLateralPosition(
     vehicleALatMetricRange, vehicleBLatMetricRange, relativePosition.lateralPosition, relativePosition.lateralDistance);
 
   ASSERT_EQ(expectedPositionLatAtoB, relativePosition.lateralPosition);
@@ -52,11 +52,11 @@ void performCalculateRelativePositionTest(Distance minA,
   ASSERT_EQ(expectedDistance, relativePosition.lateralDistance);
   ASSERT_EQ(expectedDistance, relativePosition.longitudinalDistance);
 
-  situationExtraction.calcluateRelativeLongitudinalPosition(vehicleBLonMetricRange,
+  situationExtraction.calculateRelativeLongitudinalPosition(vehicleBLonMetricRange,
                                                             vehicleALonMetricRange,
                                                             relativePosition.longitudinalPosition,
                                                             relativePosition.longitudinalDistance);
-  situationExtraction.calcluateRelativeLateralPosition(
+  situationExtraction.calculateRelativeLateralPosition(
     vehicleBLatMetricRange, vehicleALatMetricRange, relativePosition.lateralPosition, relativePosition.lateralDistance);
 
   ASSERT_EQ(expectedPositionLatBtoA, relativePosition.lateralPosition);
@@ -65,7 +65,7 @@ void performCalculateRelativePositionTest(Distance minA,
   ASSERT_EQ(expectedDistance, relativePosition.longitudinalDistance);
 }
 
-TEST(CalcluateRelativePositionTest, no_overlap_positive)
+TEST(calculateRelativePositionTest, no_overlap_positive)
 {
   performCalculateRelativePositionTest(Distance(1.),
                                        Distance(2.),
@@ -78,7 +78,7 @@ TEST(CalcluateRelativePositionTest, no_overlap_positive)
                                        Distance(1.));
 }
 
-TEST(CalcluateRelativePositionTest, no_overlap_negative)
+TEST(calculateRelativePositionTest, no_overlap_negative)
 {
   performCalculateRelativePositionTest(Distance(-10.),
                                        Distance(-8.),
@@ -91,7 +91,7 @@ TEST(CalcluateRelativePositionTest, no_overlap_negative)
                                        Distance(3.));
 }
 
-TEST(CalcluateRelativePositionTest, no_overlap_mixed)
+TEST(calculateRelativePositionTest, no_overlap_mixed)
 {
   performCalculateRelativePositionTest(Distance(-10.),
                                        Distance(-8.),
@@ -104,7 +104,7 @@ TEST(CalcluateRelativePositionTest, no_overlap_mixed)
                                        Distance(11.));
 }
 
-TEST(CalcluateRelativePositionTest, no_overlap_vehicle_crossing_null)
+TEST(calculateRelativePositionTest, no_overlap_vehicle_crossing_null)
 {
   performCalculateRelativePositionTest(Distance(-10.),
                                        Distance(-8.),
@@ -117,7 +117,7 @@ TEST(CalcluateRelativePositionTest, no_overlap_vehicle_crossing_null)
                                        Distance(5.));
 }
 
-TEST(CalcluateRelativePositionTest, partly_overlap_positive)
+TEST(calculateRelativePositionTest, partly_overlap_positive)
 {
   performCalculateRelativePositionTest(Distance(2.),
                                        Distance(4.),
@@ -130,7 +130,7 @@ TEST(CalcluateRelativePositionTest, partly_overlap_positive)
                                        Distance(0.));
 }
 
-TEST(CalcluateRelativePositionTest, partly_overlap_negative)
+TEST(calculateRelativePositionTest, partly_overlap_negative)
 {
   performCalculateRelativePositionTest(Distance(-10.),
                                        Distance(-8.),
@@ -143,7 +143,7 @@ TEST(CalcluateRelativePositionTest, partly_overlap_negative)
                                        Distance(0.));
 }
 
-TEST(CalcluateRelativePositionTest, partly_overlap_mixed)
+TEST(calculateRelativePositionTest, partly_overlap_mixed)
 {
   performCalculateRelativePositionTest(Distance(-10.),
                                        Distance(-8.),
@@ -156,7 +156,7 @@ TEST(CalcluateRelativePositionTest, partly_overlap_mixed)
                                        Distance(0.));
 }
 
-TEST(CalcluateRelativePositionTest, full_overlap_positive)
+TEST(calculateRelativePositionTest, full_overlap_positive)
 {
   performCalculateRelativePositionTest(Distance(2.),
                                        Distance(4.),
@@ -169,7 +169,7 @@ TEST(CalcluateRelativePositionTest, full_overlap_positive)
                                        Distance(0.));
 }
 
-TEST(CalcluateRelativePositionTest, full_overlap_negative)
+TEST(calculateRelativePositionTest, full_overlap_negative)
 {
   performCalculateRelativePositionTest(Distance(-10.),
                                        Distance(-8.),
@@ -182,7 +182,7 @@ TEST(CalcluateRelativePositionTest, full_overlap_negative)
                                        Distance(0.));
 }
 
-TEST(CalcluateRelativePositionTest, full_overlap_mixed)
+TEST(calculateRelativePositionTest, full_overlap_mixed)
 {
   performCalculateRelativePositionTest(Distance(-10.),
                                        Distance(8.),

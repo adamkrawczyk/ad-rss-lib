@@ -99,7 +99,7 @@ private:
   std::unique_ptr<RssResponseResolving> mResponseResolving;
   std::unique_ptr<RssSituationChecking> mSituationChecking;
   std::unique_ptr<RssSituationExtraction> mSituationExtraction;
-  ad::rss::helpers::RssLogger mLogger;
+  std::shared_ptr<helpers::RssLogger> mLogger;
 };
 
 } // namespace core

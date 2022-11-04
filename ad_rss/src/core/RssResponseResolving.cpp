@@ -11,25 +11,22 @@
 #include "ad/rss/state/RssStateOperation.hpp"
 #include "ad/rss/state/RssStateSnapshotValidInputRange.hpp"
 #include "ad/rss/unstructured/Geometry.hpp"
-#include "spdlog/fmt/ostr.h"
-#include "spdlog/spdlog.h"
 
 namespace ad {
 namespace rss {
 namespace core {
 
-RssResponseResolving::RssResponseResolving()
+RssResponseResolving::RssResponseResolving(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
 {
+  mRssLogger_ = mRssLogger_ptr;
 }
 
 bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &currentStateSnapshot,
-                                                 state::ProperResponse &response,
-                                                 helpers::RssLogger &logMessage)
+                                                 state::ProperResponse &response)
 {
-  logMessage.logMessage("RssResponseResolving::provideProperResponse>>");
   if (!withinValidInputRange(currentStateSnapshot))
   {
-    spdlog::error("RssResponseResolving::provideProperResponse>> Invalid input");
+    mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Invalid input");
     return false;
   }
 
@@ -83,7 +80,7 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
     response.accelerationRestrictions.lateralRightRange.minimum = std::numeric_limits<physics::Acceleration>::lowest();
     response.headingRanges.clear();
     physics::Acceleration driveAwayBrakeMin = currentStateSnapshot.defaultEgoVehicleRssDynamics.alphaLon.accelMax;
-    bool unstructuredDriveAwayToBrakeTransitionOccured = false;
+    bool unstructuredDriveAwayToBrakeTransitionOccurred = false;
 
     for (auto const &currentState : currentStateSnapshot.individualResponses)
     {
@@ -93,23 +90,26 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
         if (std::find(response.dangerousObjects.begin(), response.dangerousObjects.end(), currentState.objectId)
             == response.dangerousObjects.end())
         {
+          mRssLogger_->appendMessage("RssResponseResolving::provideProperResponse>> Object is dangerous id: ",
+                                     currentState.objectId);
           response.dangerousObjects.push_back(currentState.objectId);
         }
 
         if (currentState.situationType == situation::SituationType::Unstructured)
         {
-          spdlog::info("RssResponseResolving::provideProperResponse>> Unstructured state is dangerous: {}",
-                       currentState);
+          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Unstructured state is dangerous: ",
+                                currentState);
           combineState(currentState.unstructuredSceneState,
                        driveAwayBrakeMin,
-                       unstructuredDriveAwayToBrakeTransitionOccured,
+                       unstructuredDriveAwayToBrakeTransitionOccurred,
                        response.unstructuredSceneResponse,
                        response.headingRanges,
                        response.accelerationRestrictions.longitudinalRange);
         }
         else // structured
         {
-          spdlog::info("RssResponseResolving::provideProperResponse>> Structured state is dangerous: {}", currentState);
+          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Structured state is dangerous: ",
+                                currentState);
 
           combineState(currentState.longitudinalState,
                        response.longitudinalResponse,
@@ -129,7 +129,7 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
       }
     }
 
-    if (unstructuredDriveAwayToBrakeTransitionOccured
+    if (unstructuredDriveAwayToBrakeTransitionOccurred
         && (response.unstructuredSceneResponse == state::UnstructuredSceneResponse::DriveAway))
     {
       response.unstructuredSceneResponse = state::UnstructuredSceneResponse::Brake;
@@ -139,13 +139,13 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
   }
   catch (std::exception &e)
   {
-    spdlog::critical(
-      "RssResponseResolving::provideProperResponse>> Exception caught'{}' {}", e.what(), currentStateSnapshot);
+    mRssLogger_->logError(
+      "RssResponseResolving::provideProperResponse>> Exception caught ", e.what(), currentStateSnapshot);
     result = false;
   }
   catch (...)
   {
-    spdlog::critical("RssResponseResolving::provideProperResponse>> Exception caught {}", currentStateSnapshot);
+    mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Exception caught ", currentStateSnapshot);
     result = false;
   }
 
@@ -189,6 +189,8 @@ void RssResponseResolving::combineState(state::UnstructuredSceneRssState const &
       auto const overlapAvailable = unstructured::getHeadingOverlap(state.headingRange, responseHeadingRanges);
       if (!overlapAvailable)
       {
+        mRssLogger_->appendMessage(
+          "RssResponseResolving::combineState>> Unstructured Scene, driveAwayToBrakeTransition, overlap available");
         driveAwayToBrakeTransition = true;
       }
     }
@@ -205,10 +207,16 @@ void RssResponseResolving::combineState(state::UnstructuredSceneRssState const &
   {
     responseHeadingRanges.clear();
     accelerationRange.maximum = std::min(accelerationRange.maximum, state.alphaLon.brakeMin);
+    mRssLogger_->appendMessage(
+      "RssResponseResolving::combineState>> Unstructured Scene, has to brake, max acceleration: ",
+      accelerationRange.maximum);
   }
   else
   {
     accelerationRange.maximum = std::min(accelerationRange.maximum, state.alphaLon.accelMax);
+    mRssLogger_->appendMessage(
+      "RssResponseResolving::combineState>> Unstructured Scene, don't has to brake, max acceleration: ",
+      accelerationRange.maximum);
   }
   // LCOV_EXCL_BR_STOP
 }
@@ -233,8 +241,8 @@ void RssResponseResolving::combineState(state::LongitudinalRssState const &state
       accelerationRange.maximum = std::min(accelerationRange.maximum, state.alphaLon.accelMax);
       break;
     default:
-      spdlog::error("RssResponseTransformation::updateAccelerationRestriction>> Invalid longitudinal response {}",
-                    state.response);
+      mRssLogger_->logError("RssResponseTransformation::updateAccelerationRestriction>> Invalid longitudinal response ",
+                            state.response);
       // LCOV_EXCL_LINE: unreachable code, keep to be on the safe side
       break;
   }
@@ -258,8 +266,8 @@ void RssResponseResolving::combineState(state::LateralRssState const &state,
       accelerationRange.maximum = std::min(accelerationRange.maximum, state.alphaLat.accelMax);
       break;
     default:
-      spdlog::error("RssResponseTransformation::updateAccelerationRestriction>> Invalid lateral response {}",
-                    state.response);
+      mRssLogger_->logError("RssResponseTransformation::updateAccelerationRestriction>> Invalid lateral response ",
+                            state.response);
       // LCOV_EXCL_LINE: unreachable code, keep to be on the safe side
       break;
   }

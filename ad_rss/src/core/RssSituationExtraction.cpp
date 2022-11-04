@@ -12,8 +12,6 @@
 #include "../world/RssSituationIdProvider.hpp"
 #include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/world/WorldModelValidInputRange.hpp"
-#include "spdlog/fmt/ostr.h"
-#include "spdlog/spdlog.h"
 
 namespace ad {
 namespace rss {
@@ -22,15 +20,16 @@ namespace core {
 using physics::Distance;
 using physics::MetricRange;
 
-RssSituationExtraction::RssSituationExtraction()
+RssSituationExtraction::RssSituationExtraction(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
 {
+  mRssLogger_ = mRssLogger_ptr;
   try
   {
     mSituationIdProvider = std::unique_ptr<world::RssSituationIdProvider>(new world::RssSituationIdProvider());
   }
   catch (...)
   {
-    spdlog::critical("RssSituationExtraction object initialization failed");
+    mRssLogger_->logCritical("RssSituationExtraction object initialization failed");
     mSituationIdProvider = nullptr;
   }
 }
@@ -39,7 +38,7 @@ RssSituationExtraction::~RssSituationExtraction()
 {
 }
 
-void RssSituationExtraction::calcluateRelativeLongitudinalPosition(
+void RssSituationExtraction::calculateRelativeLongitudinalPosition(
   MetricRange const &egoMetricRange,
   MetricRange const &otherMetricRange,
   situation::LongitudinalRelativePosition &longitudinalPosition,
@@ -73,7 +72,7 @@ void RssSituationExtraction::calcluateRelativeLongitudinalPosition(
   }
 }
 
-void RssSituationExtraction::calcluateRelativeLongitudinalPositionIntersection(
+void RssSituationExtraction::calculateRelativeLongitudinalPositionIntersection(
   MetricRange const &egoMetricRange,
   MetricRange const &otherMetricRange,
   situation::LongitudinalRelativePosition &longitudinalPosition,
@@ -107,7 +106,7 @@ void RssSituationExtraction::calcluateRelativeLongitudinalPositionIntersection(
   }
 }
 
-void RssSituationExtraction::calcluateRelativeLateralPosition(MetricRange const &egoMetricRange,
+void RssSituationExtraction::calculateRelativeLateralPosition(MetricRange const &egoMetricRange,
                                                               MetricRange const &otherMetricRange,
                                                               situation::LateralRelativePosition &lateralPosition,
                                                               Distance &lateralDistance)
@@ -145,8 +144,8 @@ bool RssSituationExtraction::convertObjectsNonIntersection(world::Scene const &c
 {
   if (!currentScene.intersectingRoad.empty())
   {
-    spdlog::error("RssSituationExtraction::convertObjectsNonIntersection>> Intersecting road not empty {}",
-                  currentScene);
+    mRssLogger_->logError("RssSituationExtraction::convertObjectsNonIntersection>> Intersecting road not empty ",
+                          currentScene);
     return false;
   }
 
@@ -158,7 +157,7 @@ bool RssSituationExtraction::convertObjectsNonIntersection(world::Scene const &c
 
   situation::LongitudinalRelativePosition longitudinalPosition;
   Distance longitudinalDistance;
-  calcluateRelativeLongitudinalPosition(egoVehicleDimension.longitudinalDimensions,
+  calculateRelativeLongitudinalPosition(egoVehicleDimension.longitudinalDimensions,
                                         objectToBeCheckedDimension.longitudinalDimensions,
                                         longitudinalPosition,
                                         longitudinalDistance);
@@ -184,7 +183,7 @@ bool RssSituationExtraction::convertObjectsNonIntersection(world::Scene const &c
   {
     situation::LateralRelativePosition lateralPosition;
     Distance lateralDistance;
-    calcluateRelativeLateralPosition(egoVehicleDimension.lateralDimensions,
+    calculateRelativeLateralPosition(egoVehicleDimension.lateralDimensions,
                                      objectToBeCheckedDimension.lateralDimensions,
                                      lateralPosition,
                                      lateralDistance);
@@ -240,7 +239,7 @@ bool RssSituationExtraction::convertObjectsIntersection(world::Scene const &curr
 
     situation::LongitudinalRelativePosition longitudinalPosition;
     Distance longitudinalDistance;
-    calcluateRelativeLongitudinalPositionIntersection(
+    calculateRelativeLongitudinalPositionIntersection(
       egoDimensionsIntersection, objectDimensionsIntersection, longitudinalPosition, longitudinalDistance);
 
     situation.relativePosition.longitudinalPosition = longitudinalPosition;
@@ -268,7 +267,8 @@ bool RssSituationExtraction::convertObjectsIntersection(world::Scene const &curr
   else
   {
     // This function should never be called if we are not in intersection situation
-    spdlog::error("RssSituationExtraction::convertObjectsIntersection>> Unexpected situationType {}", currentScene);
+    mRssLogger_->logError("RssSituationExtraction::convertObjectsIntersection>> Unexpected situationType ",
+                          currentScene);
     result = false; // LCOV_EXCL_LINE: unreachable code, keep to be on the safe side
   }
 
@@ -287,17 +287,19 @@ bool RssSituationExtraction::extractSituationInputRangeChecked(world::TimeIndex 
        && (currentScene.object.objectType != world::ObjectType::Pedestrian))
       || (currentScene.egoVehicle.objectType != world::ObjectType::EgoVehicle))
   {
-    spdlog::error("RssSituationExtraction::extractSituationInputRangeChecked>> Invalid object type. Ego: {} Object: {}",
-                  currentScene.egoVehicle,
-                  currentScene.object);
+    mRssLogger_->logError("RssSituationExtraction::extractSituationInputRangeChecked>> Invalid object type. Ego: ",
+                          currentScene.egoVehicle,
+                          " Object: ",
+                          currentScene.object);
     return false;
   }
   if (currentScene.object.objectId == currentScene.egoVehicle.objectId)
   {
-    spdlog::error("RssSituationExtraction::extractSituationInputRangeChecked>> Object and ego vehicle must not have "
-                  "the same id. Ego: {} Object: {}",
-                  currentScene.egoVehicle,
-                  currentScene.object);
+    mRssLogger_->logError("RssSituationExtraction::extractSituationInputRangeChecked>> Object and ego vehicle must not "
+                          "have the same id. Ego: ",
+                          currentScene.egoVehicle,
+                          " Object: ",
+                          currentScene.object);
     return false;
   }
   if (!static_cast<bool>(mSituationIdProvider))
@@ -358,8 +360,8 @@ bool RssSituationExtraction::extractSituationInputRangeChecked(world::TimeIndex 
       }
       default:
       {
-        spdlog::error("RssSituationExtraction::extractSituationInputRangeChecked>> Invalid situation type {}",
-                      currentScene);
+        mRssLogger_->logError("RssSituationExtraction::extractSituationInputRangeChecked>> Invalid situation type ",
+                              currentScene);
         result = false;
         break;
       }
@@ -367,16 +369,16 @@ bool RssSituationExtraction::extractSituationInputRangeChecked(world::TimeIndex 
   }
   catch (std::exception &e)
   {
-    spdlog::critical("RssSituationExtraction::extractSituationInputRangeChecked>> Exception caught '{}' {} {}",
-                     e.what(),
-                     timeIndex,
-                     currentScene);
+    mRssLogger_->logCritical("RssSituationExtraction::extractSituationInputRangeChecked>> Exception caught ",
+                             e.what(),
+                             timeIndex,
+                             currentScene);
     result = false;
   }
   catch (...)
   {
-    spdlog::critical(
-      "RssSituationExtraction::extractSituationInputRangeChecked>> Exception caught {} {}", timeIndex, currentScene);
+    mRssLogger_->logCritical(
+      "RssSituationExtraction::extractSituationInputRangeChecked>> Exception caught ", timeIndex, currentScene);
     result = false;
   }
 
@@ -526,13 +528,11 @@ bool RssSituationExtraction::mergeSituations(situation::Situation const &otherSi
 }
 
 bool RssSituationExtraction::extractSituations(world::WorldModel const &worldModel,
-                                               situation::SituationSnapshot &situationSnapshot,
-                                               helpers::RssLogger &logMessage)
+                                               situation::SituationSnapshot &situationSnapshot)
 {
-  logMessage_ = logMessage;
   if (!withinValidInputRange(worldModel))
   {
-    logMessage.logError("RssSituationExtraction::extractSituation>> Invalid input ", worldModel);
+    mRssLogger_->logError("RssSituationExtraction::extractSituation>> Invalid input ", worldModel);
     return false;
   }
 
@@ -561,24 +561,25 @@ bool RssSituationExtraction::extractSituations(world::WorldModel const &worldMod
         }
         else if (!mergeSituations(situation, *findResult))
         {
+          mRssLogger_->logError("RssSituationExtraction::extractSituation>> Merging situations failed ", situation);
           result = false;
         }
       }
       else
       {
-        spdlog::error("RssSituationExtraction::extractSituations>> Extraction failed {}", scene);
+        mRssLogger_->logError("RssSituationExtraction::extractSituations>> Extraction failed ", scene);
         result = false;
       }
     }
   }
   catch (std::exception &e)
   {
-    spdlog::critical("RssSituationExtraction::extractSituations>> Exception caught '{}' {}", e.what(), worldModel);
+    mRssLogger_->logCritical("RssSituationExtraction::extractSituations>> Exception caught ", e.what(), worldModel);
     result = false;
   }
   catch (...)
   {
-    spdlog::critical("RssSituationExtraction::extractSituations>> Exception caught {}", worldModel);
+    mRssLogger_->logCritical("RssSituationExtraction::extractSituations>> Exception caught ", worldModel);
     result = false;
   }
   return result;

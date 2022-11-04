@@ -49,7 +49,7 @@ public:
   /*!
    * @brief constructor
    */
-  RssSituationExtraction();
+  RssSituationExtraction(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /*!
    * @brief destructor
@@ -64,20 +64,18 @@ public:
    *
    * @return true if the situations could be created, false if there was an error during the operation.
    */
-  bool extractSituations(world::WorldModel const &worldModel,
-                         situation::SituationSnapshot &situationSnapshot,
-                         ad::rss::helpers::RssLogger &logMessage);
+  bool extractSituations(world::WorldModel const &worldModel, situation::SituationSnapshot &situationSnapshot);
 
 private:
-  void calcluateRelativeLongitudinalPosition(physics::MetricRange const &egoMetricRange,
+  void calculateRelativeLongitudinalPosition(physics::MetricRange const &egoMetricRange,
                                              physics::MetricRange const &otherMetricRange,
                                              situation::LongitudinalRelativePosition &longitudinalPosition,
                                              physics::Distance &longitudinalDistance);
-  void calcluateRelativeLongitudinalPositionIntersection(physics::MetricRange const &egoMetricRange,
+  void calculateRelativeLongitudinalPositionIntersection(physics::MetricRange const &egoMetricRange,
                                                          physics::MetricRange const &otherMetricRange,
                                                          situation::LongitudinalRelativePosition &longitudinalPosition,
                                                          physics::Distance &longitudinalDistance);
-  void calcluateRelativeLateralPosition(physics::MetricRange const &egoMetricRange,
+  void calculateRelativeLateralPosition(physics::MetricRange const &egoMetricRange,
                                         physics::MetricRange const &otherMetricRange,
                                         situation::LateralRelativePosition &lateralPosition,
                                         physics::Distance &lateralDistance);
@@ -110,7 +108,7 @@ private:
   bool mergeSituations(situation::Situation const &otherSituation, situation::Situation &mergedSituation);
 
   std::unique_ptr<ad::rss::world::RssSituationIdProvider> mSituationIdProvider;
-  ad::rss::helpers::RssLogger mRssLogger;
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 
 } // namespace core
