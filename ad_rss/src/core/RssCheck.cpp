@@ -53,7 +53,7 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
     if (!static_cast<bool>(mResponseResolving) || !static_cast<bool>(mSituationChecking)
         || !static_cast<bool>(mSituationExtraction))
     {
-      mLogger->logCritical("RssCheck::calculateProperResponse>> object not properly initialized");
+      mLogger->logCritical("RssCheck::calculateProperResponse>> Object not properly initialized");
       return false;
     }
 
@@ -74,7 +74,7 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
   // LCOV_EXCL_START: unreachable code, keep to be on the safe side
   catch (...)
   {
-    mLogger->logCritical("RssCheck::calculateProperResponse>> exception caught");
+    mLogger->logCritical("RssCheck::calculateProperResponse>> Exception caught");
     result = false;
   }
   // LCOV_EXCL_STOP: unreachable code, keep to be on the safe side

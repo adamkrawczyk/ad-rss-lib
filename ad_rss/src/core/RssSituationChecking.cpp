@@ -102,7 +102,7 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
         || (!static_cast<bool>(mUnstructuredSceneChecker)))
     {
       mRssLogger_->logCritical(
-        "RssSituationChecking::checkSituationInputRangeChecked>> object not properly initialized");
+        "RssSituationChecking::checkSituationInputRangeChecked>> Object not properly initialized");
       return false;
     }
 
