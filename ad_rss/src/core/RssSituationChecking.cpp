@@ -66,8 +66,9 @@ inline state::RssState createRssState(situation::SituationId const &situationId,
   return resultRssState;
 }
 
-RssSituationChecking::RssSituationChecking()
+RssSituationChecking::RssSituationChecking(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
 {
+  mRssLogger_ = mRssLogger_ptr;
   try
   {
     mNonIntersectionChecker = std::unique_ptr<situation::RssStructuredSceneNonIntersectionChecker>(
@@ -79,7 +80,7 @@ RssSituationChecking::RssSituationChecking()
   }
   catch (...)
   {
-    spdlog::critical("RssSituationChecking object initialization failed");
+    mRssLogger_->logCritical("RssSituationChecking object initialization failed");
     mNonIntersectionChecker = nullptr;
     mIntersectionChecker = nullptr;
     mUnstructuredSceneChecker = nullptr;
@@ -100,7 +101,8 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
     if ((!static_cast<bool>(mNonIntersectionChecker)) || (!static_cast<bool>(mIntersectionChecker))
         || (!static_cast<bool>(mUnstructuredSceneChecker)))
     {
-      spdlog::critical("RssSituationChecking::checkSituationInputRangeChecked>> object not properly initialized");
+      mRssLogger_->logCritical(
+        "RssSituationChecking::checkSituationInputRangeChecked>> Object not properly initialized");
       return false;
     }
 
@@ -135,7 +137,8 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
           mCurrentTimeIndex, situation, rssStateSnapshot.unstructuredSceneEgoInformation, rssState);
         break;
       default:
-        spdlog::error("RssSituationChecking::checkSituationInputRangeChecked>> Invalid situation type {}", situation);
+        mRssLogger_->logError("RssSituationChecking::checkSituationInputRangeChecked>> Invalid situation type ",
+                              situation);
         result = false;
         break;
     }
@@ -147,13 +150,13 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
   }
   catch (std::exception &e)
   {
-    spdlog::critical(
-      "RssSituationChecking::checkSituationInputRangeChecked>> Exception caught '{}' {}", e.what(), situation);
+    mRssLogger_->logCritical(
+      "RssSituationChecking::checkSituationInputRangeChecked>> Exception caught ", e.what(), situation);
     result = false;
   }
   catch (...)
   {
-    spdlog::critical("RssSituationChecking::checkSituationInputRangeChecked>> Exception caught {}", situation);
+    mRssLogger_->logCritical("RssSituationChecking::checkSituationInputRangeChecked>> Exception caught ", situation);
     result = false;
   }
 
@@ -165,12 +168,12 @@ bool RssSituationChecking::checkSituations(situation::SituationSnapshot const &s
 {
   if (!withinValidInputRange(situationSnapshot))
   {
-    spdlog::error("RssSituationChecking::checkSituations>> Invalid input {}", situationSnapshot);
+    mRssLogger_->logError("RssSituationChecking::checkSituations>> Invalid input ", situationSnapshot);
     return false;
   }
   if (!checkTimeIncreasingConsistently(situationSnapshot.timeIndex))
   {
-    spdlog::error("RssSituationChecking::checkSituations>> Inconsistent time {}", situationSnapshot.timeIndex);
+    mRssLogger_->logError("RssSituationChecking::checkSituations>> Inconsistent time ", situationSnapshot.timeIndex);
     return false;
   }
   bool result = true;
@@ -190,11 +193,14 @@ bool RssSituationChecking::checkSituations(situation::SituationSnapshot const &s
   }
   catch (...)
   {
-    spdlog::critical("RssSituationChecking::checkSituations>> Exception caught {}", situationSnapshot);
+    mRssLogger_->logCritical("RssSituationChecking::checkSituations>> Exception caught ", situationSnapshot);
     result = false;
   }
   if (!result)
   {
+    mRssLogger_->appendMessage(
+      "RssSituationChecking::checkSituations>> Situation check failed, possible non-analyzable situation ",
+      situationSnapshot);
     rssStateSnapshot.individualResponses.clear();
   }
   return result;

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/state/ProperResponse.hpp"
 #include "ad/rss/state/RssStateSnapshot.hpp"
 
@@ -42,7 +43,7 @@ public:
   /**
    * @brief constructor
    */
-  RssResponseResolving();
+  RssResponseResolving(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /**
    * @brief Calculate the proper response out of the current responses
@@ -103,6 +104,7 @@ private:
   void combineState(state::LateralRssState const &state,
                     state::LateralResponse &response,
                     physics::AccelerationRange &accelerationRange);
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 
 } // namespace core

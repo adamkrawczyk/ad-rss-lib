@@ -12,6 +12,7 @@
 #pragma once
 
 #include <memory>
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/situation/SituationSnapshot.hpp"
 #include "ad/rss/state/ProperResponse.hpp"
 #include "ad/rss/state/RssStateSnapshot.hpp"
@@ -77,10 +78,28 @@ public:
                                state::RssStateSnapshot &rssStateSnapshot,
                                state::ProperResponse &properResponse);
 
+  /**
+   * @brief calculateProperResponse
+   *
+   * @param [in] worldModel - the current world model information
+   * \param [out] situationSnapshot - The intermediate situation snapshot
+   * \param [out] rssStateSnapshot - The intermediate rss state snapshot
+   * \param [out] properResponse - The intermediate proper response
+   * \param [out] issueDescription - The log with description of the possible error
+   *
+   * @return return true if the proper response could be calculated, false otherwise.
+   */
+  bool calculateProperResponse(world::WorldModel const &worldModel,
+                               situation::SituationSnapshot &situationSnapshot,
+                               state::RssStateSnapshot &rssStateSnapshot,
+                               state::ProperResponse &properResponse,
+                               std::string &issueDescription);
+
 private:
   std::unique_ptr<RssResponseResolving> mResponseResolving;
   std::unique_ptr<RssSituationChecking> mSituationChecking;
   std::unique_ptr<RssSituationExtraction> mSituationExtraction;
+  std::shared_ptr<helpers::RssLogger> mLogger;
 };
 
 } // namespace core

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/situation/SituationSnapshot.hpp"
 #include "ad/rss/world/WorldModel.hpp"
 
@@ -48,7 +49,7 @@ public:
   /*!
    * @brief constructor
    */
-  RssSituationExtraction();
+  RssSituationExtraction(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /*!
    * @brief destructor
@@ -66,15 +67,15 @@ public:
   bool extractSituations(world::WorldModel const &worldModel, situation::SituationSnapshot &situationSnapshot);
 
 private:
-  void calcluateRelativeLongitudinalPosition(physics::MetricRange const &egoMetricRange,
+  void calculateRelativeLongitudinalPosition(physics::MetricRange const &egoMetricRange,
                                              physics::MetricRange const &otherMetricRange,
                                              situation::LongitudinalRelativePosition &longitudinalPosition,
                                              physics::Distance &longitudinalDistance);
-  void calcluateRelativeLongitudinalPositionIntersection(physics::MetricRange const &egoMetricRange,
+  void calculateRelativeLongitudinalPositionIntersection(physics::MetricRange const &egoMetricRange,
                                                          physics::MetricRange const &otherMetricRange,
                                                          situation::LongitudinalRelativePosition &longitudinalPosition,
                                                          physics::Distance &longitudinalDistance);
-  void calcluateRelativeLateralPosition(physics::MetricRange const &egoMetricRange,
+  void calculateRelativeLateralPosition(physics::MetricRange const &egoMetricRange,
                                         physics::MetricRange const &otherMetricRange,
                                         situation::LateralRelativePosition &lateralPosition,
                                         physics::Distance &lateralDistance);
@@ -107,6 +108,7 @@ private:
   bool mergeSituations(situation::Situation const &otherSituation, situation::Situation &mergedSituation);
 
   std::unique_ptr<ad::rss::world::RssSituationIdProvider> mSituationIdProvider;
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 
 } // namespace core

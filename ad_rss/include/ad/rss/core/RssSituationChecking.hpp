@@ -12,6 +12,7 @@
 #pragma once
 
 #include <memory>
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/situation/SituationSnapshot.hpp"
 #include "ad/rss/state/RssStateSnapshot.hpp"
 
@@ -48,7 +49,7 @@ public:
   /*!
    * @brief constructor
    */
-  RssSituationChecking();
+  RssSituationChecking(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /*!
    * @brief destructor
@@ -91,6 +92,7 @@ private:
   std::unique_ptr<ad::rss::situation::RssStructuredSceneNonIntersectionChecker> mNonIntersectionChecker;
   std::unique_ptr<ad::rss::situation::RssUnstructuredSceneChecker> mUnstructuredSceneChecker;
   world::TimeIndex mCurrentTimeIndex{0u};
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 } // namespace core
 } // namespace rss
