@@ -207,16 +207,16 @@ void RssResponseResolving::combineState(state::UnstructuredSceneRssState const &
   {
     responseHeadingRanges.clear();
     accelerationRange.maximum = std::min(accelerationRange.maximum, state.alphaLon.brakeMin);
-    mRssLogger_->appendMessage(
-      "RssResponseResolving::combineState>> Unstructured Scene, has to brake, max acceleration: ",
-      accelerationRange.maximum);
+    mRssLogger_->appendMessage("RssResponseResolving::combineState>> Unstructured Scene, has to brake, max "
+                               "acceleration from accelerationRange: ",
+                               accelerationRange.maximum);
   }
   else
   {
     accelerationRange.maximum = std::min(accelerationRange.maximum, state.alphaLon.accelMax);
-    mRssLogger_->appendMessage(
-      "RssResponseResolving::combineState>> Unstructured Scene, don't has to brake, max acceleration: ",
-      accelerationRange.maximum);
+    mRssLogger_->appendMessage("RssResponseResolving::combineState>> Unstructured Scene, don't has to brake, max "
+                               "acceleration from accelerationRange: ",
+                               accelerationRange.maximum);
   }
   // LCOV_EXCL_BR_STOP
 }
