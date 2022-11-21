@@ -36,6 +36,9 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
   {
     response.timeIndex = currentStateSnapshot.timeIndex;
     response.isSafe = true;
+    response.isSafeLongitudinal = true;
+    response.isSafeLateralRight = true;
+    response.isSafeLateralLeft = true;
     response.dangerousObjects.clear();
     response.longitudinalResponse = state::LongitudinalResponse::None;
     response.lateralResponseLeft = state::LateralResponse::None;
@@ -84,6 +87,10 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
 
     for (auto const &currentState : currentStateSnapshot.individualResponses)
     {
+      response.isSafeLongitudinal &= currentState.longitudinalState.isSafe;
+      response.isSafeLateralRight &= currentState.lateralStateRight.isSafe;
+      response.isSafeLateralLeft &= currentState.lateralStateLeft.isSafe;
+
       if (isDangerous(currentState))
       {
         response.isSafe = false;
