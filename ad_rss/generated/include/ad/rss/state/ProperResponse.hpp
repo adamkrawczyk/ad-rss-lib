@@ -133,9 +133,24 @@ struct ProperResponse
   ::ad::rss::world::TimeIndex timeIndex{0u};
 
   /*!
-   * Flag to indicate if the state is longitudinal safe.
+   * Flag to indicate if the state is safe both longitudinally and laterally.
    */
   bool isSafe{false};
+
+  /*!
+   * Flag to indicate if the state is safe longitudinally.
+   */
+  bool isSafeLongitudinal{false};
+
+  /*!
+   * Flag to indicate if the state is safe laterally to the right.
+   */
+  bool isSafeLateralRight{false};
+
+  /*!
+   * Flag to indicate if the state is safe laterally to the left.
+   */
+  bool isSafeLateralLeft{false};
 
   /*!
    * List of dangerous objects.
