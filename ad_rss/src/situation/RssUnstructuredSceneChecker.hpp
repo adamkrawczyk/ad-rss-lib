@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <map>
 #include "ad/rss/situation/Situation.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/state/RssState.hpp"
 #include "ad/rss/unstructured/Geometry.hpp"
 #include "ad/rss/world/TimeIndex.hpp"
@@ -61,7 +62,7 @@ public:
   /**
    * @brief Constructor
    */
-  RssUnstructuredSceneChecker() = default;
+  RssUnstructuredSceneChecker(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /**
    * @brief Destructor
@@ -162,6 +163,7 @@ private:
    * @brief map to state drive-away data for situations
    */
   std::map<situation::SituationId, DriveAwayState> mDriveAwayStateMap;
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 
 } // namespace situation

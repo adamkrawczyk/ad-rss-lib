@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <map>
 #include "ad/rss/situation/Situation.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/state/RssState.hpp"
 #include "ad/rss/world/TimeIndex.hpp"
 
@@ -64,7 +65,7 @@ public:
   /**
    * @brief Constructor
    */
-  RssStructuredSceneIntersectionChecker() = default;
+  RssStructuredSceneIntersectionChecker(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr);
 
   /**
    * @brief Destructor
@@ -110,6 +111,7 @@ private:
    * If time index increases we need to update the state maps
    */
   world::TimeIndex mCurrentTimeIndex{0u};
+  std::shared_ptr<helpers::RssLogger> mRssLogger_;
 };
 
 } // namespace situation

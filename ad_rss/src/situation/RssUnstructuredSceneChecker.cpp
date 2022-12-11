@@ -22,6 +22,11 @@ namespace situation {
 
 using situation::calculateTimeToCoverDistance;
 
+RssUnstructuredSceneChecker::RssUnstructuredSceneChecker(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
+{
+  mRssLogger_ = mRssLogger_ptr;
+}
+
 bool RssUnstructuredSceneChecker::calculateUnstructuredSceneStateInfo(
   situation::VehicleState const &vehicleState, state::UnstructuredSceneStateInformation &stateInfo) const
 {

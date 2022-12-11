@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/situation/VehicleState.hpp"
 
 /*!
@@ -66,7 +67,7 @@ bool calculateLateralDistanceOffsetAfterStatedBrakingPattern(physics::Speed cons
                                                              physics::Duration const &responseTime,
                                                              physics::Acceleration const &acceleration,
                                                              physics::Acceleration const &deceleration,
-                                                             physics::Distance &distanceOffset);
+                                                             physics::Distance &distanceOffset, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 /**
  * @brief Calculate the \a "safe longitudinal distance" between the two vehicles,
  *        Assuming: Maximum deceleration for leading vehicle, and \a "stated breaking pattern" for following vehicle
@@ -109,7 +110,7 @@ bool checkSafeLongitudinalDistanceSameDirection(VehicleState const &leadingVehic
                                                 VehicleState const &followingVehicle,
                                                 physics::Distance const &vehicleDistance,
                                                 physics::Distance &safeDistance,
-                                                bool &isDistanceSafe);
+                                                bool &isDistanceSafe, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Calculate  the safe longitudinal distance between to vehicles driving in opposite direction
@@ -209,7 +210,7 @@ bool checkStopInFrontIntersection(VehicleState const &vehicle, physics::Distance
  */
 bool calculateSafeLateralDistance(VehicleState const &leftVehicle,
                                   VehicleState const &rightVehicle,
-                                  physics::Distance &safeDistance);
+                                  physics::Distance &safeDistance, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Check if the lateral distance between to vehicles is safe
@@ -241,7 +242,7 @@ bool checkSafeLateralDistance(VehicleState const &leftVehicle,
                               VehicleState const &rightVehicle,
                               physics::Distance const &vehicleDistance,
                               physics::Distance &safeDistance,
-                              bool &isDistanceSafe);
+                              bool &isDistanceSafe, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 } // namespace situation
 } // namespace rss

@@ -14,6 +14,11 @@ namespace ad {
 namespace rss {
 namespace situation {
 
+RssStructuredSceneNonIntersectionChecker::RssStructuredSceneNonIntersectionChecker(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
+{
+  mRssLogger_ = mRssLogger_ptr;
+}
+
 bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(world::TimeIndex const &timeIndex,
                                                                                 Situation const &situation,
                                                                                 state::RssState &rssState)
@@ -53,9 +58,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
   }
   else
   {
-    spdlog::error(
-      "RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> situation type invalid {}",
-      situation);
+    mRssLogger_->logError("RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> situation type invalid", situation);
   }
 
   // second calculate proper response in respect to the state before danger threshold according to definition 10 of the
@@ -178,7 +181,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
                                                         situation.otherVehicleState,
                                                         situation.relativePosition.longitudinalDistance,
                                                         rssState.rssStateInformation.safeDistance,
-                                                        isSafe);
+                                                        isSafe, mRssLogger_);
   }
   else
   {
@@ -188,7 +191,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
                                                         situation.egoVehicleState,
                                                         situation.relativePosition.longitudinalDistance,
                                                         rssState.rssStateInformation.safeDistance,
-                                                        isSafe);
+                                                        isSafe, mRssLogger_);
   }
 
   rssState.isSafe = isSafe;
@@ -266,7 +269,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
                                       situation.otherVehicleState,
                                       situation.relativePosition.lateralDistance,
                                       rssStateRight.rssStateInformation.safeDistance,
-                                      isDistanceSafe);
+                                      isDistanceSafe, mRssLogger_);
   }
   else if (LateralRelativePosition::AtRight == situation.relativePosition.lateralPosition)
   {
@@ -281,7 +284,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
                                       situation.egoVehicleState,
                                       situation.relativePosition.lateralDistance,
                                       rssStateLeft.rssStateInformation.safeDistance,
-                                      isDistanceSafe);
+                                      isDistanceSafe, mRssLogger_);
   }
   else
   {

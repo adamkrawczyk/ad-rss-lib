@@ -7,6 +7,7 @@
 // ----------------- END LICENSE BLOCK -----------------------------------
 
 #include "TestSupport.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 #include "ad/rss/situation/RssFormulas.hpp"
 
 namespace ad {
@@ -15,6 +16,7 @@ namespace situation {
 
 TEST(RssFormulaTestsInputRangeChecks, checkSafeLongitudinalDistanceSameDirection)
 {
+  auto mLogger = std::shared_ptr<helpers::RssLogger>(new helpers::RssLogger());
   bool isSafe = false;
   Distance vehicleDistance(-1.);
   Distance safeDistance(0);
@@ -22,7 +24,7 @@ TEST(RssFormulaTestsInputRangeChecks, checkSafeLongitudinalDistanceSameDirection
   VehicleState followingVehicle = createVehicleStateForLongitudinalMotion(10);
 
   ASSERT_FALSE(checkSafeLongitudinalDistanceSameDirection(
-    leadingVehicle, followingVehicle, vehicleDistance, safeDistance, isSafe));
+    leadingVehicle, followingVehicle, vehicleDistance, safeDistance, isSafe, mLogger));
 }
 
 TEST(RssFormulaTestsInputRangeChecks, checkSafeLongitudinalDistanceOppositeDirection)
@@ -39,13 +41,14 @@ TEST(RssFormulaTestsInputRangeChecks, checkSafeLongitudinalDistanceOppositeDirec
 
 TEST(RssFormulaTestsInputRangeChecks, checkSafeLateralDistance)
 {
+  auto mLogger = std::shared_ptr<helpers::RssLogger>(new helpers::RssLogger());
   bool isSafe = false;
   Distance vehicleDistance(-1.);
   Distance safeDistance(0);
   VehicleState leftVehicle = createVehicleStateForLongitudinalMotion(50);
   VehicleState rightVehicle = createVehicleStateForLongitudinalMotion(50);
 
-  ASSERT_FALSE(checkSafeLateralDistance(leftVehicle, rightVehicle, vehicleDistance, safeDistance, isSafe));
+  ASSERT_FALSE(checkSafeLateralDistance(leftVehicle, rightVehicle, vehicleDistance, safeDistance, isSafe, mLogger));
 }
 
 TEST(RssFormulaTestsInputRangeChecks, calculateSafeLongitudinalDistanceOppositeDirection)

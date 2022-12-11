@@ -21,6 +21,11 @@ namespace situation {
 
 using situation::calculateTimeToCoverDistance;
 
+RssStructuredSceneIntersectionChecker::RssStructuredSceneIntersectionChecker(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
+{
+  mRssLogger_ = mRssLogger_ptr;
+}
+
 bool RssStructuredSceneIntersectionChecker::checkLateralIntersect(Situation const &situation, bool &isSafe)
 {
   isSafe = false;
@@ -135,7 +140,7 @@ bool RssStructuredSceneIntersectionChecker::checkIntersectionSafe(Situation cons
                                                           situation.otherVehicleState,
                                                           situation.relativePosition.longitudinalDistance,
                                                           rssStateInformation.safeDistance,
-                                                          isSafe);
+                                                          isSafe, mRssLogger_);
     }
     else
     {
@@ -144,7 +149,7 @@ bool RssStructuredSceneIntersectionChecker::checkIntersectionSafe(Situation cons
                                                           situation.egoVehicleState,
                                                           situation.relativePosition.longitudinalDistance,
                                                           rssStateInformation.safeDistance,
-                                                          isSafe);
+                                                          isSafe, mRssLogger_);
     }
     if (isSafe)
     {
