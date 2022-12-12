@@ -75,8 +75,8 @@ RssSituationChecking::RssSituationChecking(std::shared_ptr<helpers::RssLogger> &
       new situation::RssStructuredSceneNonIntersectionChecker(mRssLogger_));
     mIntersectionChecker = std::unique_ptr<situation::RssStructuredSceneIntersectionChecker>(
       new situation::RssStructuredSceneIntersectionChecker(mRssLogger_));
-    mUnstructuredSceneChecker
-      = std::unique_ptr<situation::RssUnstructuredSceneChecker>(new situation::RssUnstructuredSceneChecker(mRssLogger_));
+    mUnstructuredSceneChecker = std::unique_ptr<situation::RssUnstructuredSceneChecker>(
+      new situation::RssUnstructuredSceneChecker(mRssLogger_));
   }
   catch (...)
   {
@@ -120,7 +120,8 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
                                   situation.objectId,
                                   situation.egoVehicleState.dynamics,
                                   IsSafe::Yes);
-        mRssLogger_->logInfo("RssSituationChecking::checkSituationInputRangeChecked>> SituationType::NotRelevant - safe");
+        mRssLogger_->logInfo(
+          "RssSituationChecking::checkSituationInputRangeChecked>> SituationType::NotRelevant - safe");
         result = true;
         break;
       case situation::SituationType::SameDirection:

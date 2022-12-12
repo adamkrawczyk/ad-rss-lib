@@ -14,7 +14,8 @@ namespace ad {
 namespace rss {
 namespace situation {
 
-RssStructuredSceneNonIntersectionChecker::RssStructuredSceneNonIntersectionChecker(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
+RssStructuredSceneNonIntersectionChecker::RssStructuredSceneNonIntersectionChecker(
+  std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
 {
   mRssLogger_ = mRssLogger_ptr;
 }
@@ -58,7 +59,8 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
   }
   else
   {
-    mRssLogger_->logError("RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> situation type invalid", situation);
+    mRssLogger_->logError(
+      "RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> situation type invalid", situation);
   }
 
   // second calculate proper response in respect to the state before danger threshold according to definition 10 of the
@@ -83,8 +85,9 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
     // Both longitudinal and lateral distances became dangerous at the same time
     if (isDangerous(rssState))
     {
-      spdlog::info("RssStructuredSceneNonIntersectionChecker>> State is dangerous (t_b == t_b,lon == t_b,lat) {}",
-                   rssState);
+      mRssLogger_->logError("RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> State is "
+                            "dangerous (t_b == t_b,lon == t_b,lat)",
+                            rssState);
     }
   }
   else if (nonDangerousStateToRemember.lateralSafe)
@@ -95,9 +98,9 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
     rssState.longitudinalState.response = state::LongitudinalResponse::None;
     if (isDangerous(rssState))
     {
-      spdlog::info(
-        "RssStructuredSceneNonIntersectionChecker>> State is dangerous (t_b == t_b,lat) No longitudinal response: {}",
-        rssState);
+      mRssLogger_->logInfo("RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> State is "
+                           "dangerous (t_b == t_b,lat) No longitudinal response",
+                           rssState);
     }
   }
   else if (nonDangerousStateToRemember.longitudinalSafe)
@@ -106,9 +109,9 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
     rssState.lateralStateRight.response = state::LateralResponse::None;
     if (isDangerous(rssState))
     {
-      spdlog::info(
-        "RssStructuredSceneNonIntersectionChecker>> State is dangerous (t_b == t_b,lon) No lateral response: {}",
-        rssState);
+      mRssLogger_->logInfo("RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> State is "
+                           "dangerous (t_b == t_b,lon) No lateral response",
+                           rssState);
     }
   }
   else
@@ -116,8 +119,9 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
     // no non dangerous state available
     if (isDangerous(rssState))
     {
-      spdlog::info("RssStructuredSceneNonIntersectionChecker>> State is dangerous, no non dangerous state available {}",
-                   rssState);
+      mRssLogger_->logInfo("RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> State is "
+                           "dangerous, no non dangerous state available",
+                           rssState);
     }
   }
 
@@ -130,7 +134,8 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
     if (!insertResult.second)
     {
       result = false;
-      spdlog::error("RssStructuredSceneNonIntersectionChecker>> map insertion failed unexpectedly");
+      mRssLogger_->logError("RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection>> map "
+                            "insertion failed unexpectedly");
     }
   }
 
@@ -181,7 +186,8 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
                                                         situation.otherVehicleState,
                                                         situation.relativePosition.longitudinalDistance,
                                                         rssState.rssStateInformation.safeDistance,
-                                                        isSafe, mRssLogger_);
+                                                        isSafe,
+                                                        mRssLogger_);
   }
   else
   {
@@ -191,7 +197,8 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
                                                         situation.egoVehicleState,
                                                         situation.relativePosition.longitudinalDistance,
                                                         rssState.rssStateInformation.safeDistance,
-                                                        isSafe, mRssLogger_);
+                                                        isSafe,
+                                                        mRssLogger_);
   }
 
   rssState.isSafe = isSafe;
@@ -222,6 +229,13 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppo
                                                             situation.relativePosition.longitudinalDistance,
                                                             rssState.rssStateInformation.safeDistance,
                                                             isSafe);
+    if (!isSafe)
+    {
+      mRssLogger_->logInfo("RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppositeDirection: "
+                           "ego vehicle is in correct lane, but not safe, longitudinalDistance: "
+                             + std::to_string(situation.relativePosition.longitudinalDistance) + "m",
+                           " SafetyDistance: " + std::to_string(rssState.rssStateInformation.safeDistance) + "m");
+    }
     rssState.response = state::LongitudinalResponse::BrakeMinCorrect;
   }
   else
@@ -233,6 +247,13 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppo
                                                             situation.relativePosition.longitudinalDistance,
                                                             rssState.rssStateInformation.safeDistance,
                                                             isSafe);
+    if (!isSafe)
+    {
+      mRssLogger_->logInfo("RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppositeDirection: "
+                           "ego vehicle is not in correct lane, and not safe, longitudinalDistance: "
+                             + std::to_string(situation.relativePosition.longitudinalDistance) + "m",
+                           " SafetyDistance: " + std::to_string(rssState.rssStateInformation.safeDistance) + "m");
+    }
   }
 
   rssState.isSafe = isSafe;
@@ -269,7 +290,8 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
                                       situation.otherVehicleState,
                                       situation.relativePosition.lateralDistance,
                                       rssStateRight.rssStateInformation.safeDistance,
-                                      isDistanceSafe, mRssLogger_);
+                                      isDistanceSafe,
+                                      mRssLogger_);
   }
   else if (LateralRelativePosition::AtRight == situation.relativePosition.lateralPosition)
   {
@@ -284,7 +306,8 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
                                       situation.egoVehicleState,
                                       situation.relativePosition.lateralDistance,
                                       rssStateLeft.rssStateInformation.safeDistance,
-                                      isDistanceSafe, mRssLogger_);
+                                      isDistanceSafe,
+                                      mRssLogger_);
   }
   else
   {

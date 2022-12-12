@@ -12,8 +12,8 @@
 #pragma once
 
 #include <map>
-#include "ad/rss/situation/Situation.hpp"
 #include "ad/rss/helpers/RssLogger.hpp"
+#include "ad/rss/situation/Situation.hpp"
 #include "ad/rss/state/RssState.hpp"
 #include "ad/rss/world/TimeIndex.hpp"
 

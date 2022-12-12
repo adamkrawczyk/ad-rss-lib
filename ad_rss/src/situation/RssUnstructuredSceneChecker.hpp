@@ -14,8 +14,8 @@
 
 #include <cstdint>
 #include <map>
-#include "ad/rss/situation/Situation.hpp"
 #include "ad/rss/helpers/RssLogger.hpp"
+#include "ad/rss/situation/Situation.hpp"
 #include "ad/rss/state/RssState.hpp"
 #include "ad/rss/unstructured/Geometry.hpp"
 #include "ad/rss/world/TimeIndex.hpp"

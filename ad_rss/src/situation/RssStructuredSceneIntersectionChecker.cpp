@@ -21,7 +21,8 @@ namespace situation {
 
 using situation::calculateTimeToCoverDistance;
 
-RssStructuredSceneIntersectionChecker::RssStructuredSceneIntersectionChecker(std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
+RssStructuredSceneIntersectionChecker::RssStructuredSceneIntersectionChecker(
+  std::shared_ptr<helpers::RssLogger> &mRssLogger_ptr)
 {
   mRssLogger_ = mRssLogger_ptr;
 }
@@ -114,13 +115,15 @@ bool RssStructuredSceneIntersectionChecker::checkIntersectionSafe(Situation cons
   {
     rssStateInformation.evaluator = state::RssStateEvaluator::IntersectionOtherPriorityEgoAbleToStop;
     rssStateInformation.currentDistance = situation.egoVehicleState.distanceToEnterIntersection;
-    result = checkStopInFrontIntersection(situation.egoVehicleState, rssStateInformation.safeDistance, isSafe);
+    result
+      = checkStopInFrontIntersection(situation.egoVehicleState, rssStateInformation.safeDistance, isSafe, mRssLogger_);
   }
   if (result && !isSafe && !situation.otherVehicleState.hasPriority)
   {
     rssStateInformation.evaluator = state::RssStateEvaluator::IntersectionEgoPriorityOtherAbleToStop;
     rssStateInformation.currentDistance = situation.otherVehicleState.distanceToEnterIntersection;
-    result = checkStopInFrontIntersection(situation.otherVehicleState, rssStateInformation.safeDistance, isSafe);
+    result = checkStopInFrontIntersection(
+      situation.otherVehicleState, rssStateInformation.safeDistance, isSafe, mRssLogger_);
   }
 
   if (isSafe)
@@ -140,7 +143,8 @@ bool RssStructuredSceneIntersectionChecker::checkIntersectionSafe(Situation cons
                                                           situation.otherVehicleState,
                                                           situation.relativePosition.longitudinalDistance,
                                                           rssStateInformation.safeDistance,
-                                                          isSafe, mRssLogger_);
+                                                          isSafe,
+                                                          mRssLogger_);
     }
     else
     {
@@ -149,7 +153,8 @@ bool RssStructuredSceneIntersectionChecker::checkIntersectionSafe(Situation cons
                                                           situation.egoVehicleState,
                                                           situation.relativePosition.longitudinalDistance,
                                                           rssStateInformation.safeDistance,
-                                                          isSafe, mRssLogger_);
+                                                          isSafe,
+                                                          mRssLogger_);
     }
     if (isSafe)
     {
