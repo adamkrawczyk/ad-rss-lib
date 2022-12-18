@@ -31,9 +31,45 @@ namespace rss {
  */
 namespace helpers {
 
+/*!
+ * @brief struct SafeDistanceComponents
+ *
+ * Struct containing the components of the safe distance calculation.
+ */
+struct SafeDistanceComponent{
+  long unsigned int id = 0; // ID referring to the ObjectID
+  bool is_safe = false ;  // True if the object is safe at any direction
+  double safe_distance = -1.0; // The safe distance for the object
+  double current_distance = -1.0; // The current distance for the object
+  std::vector<std::pair<std::string, double>> distance_component; // The description and the distance component
+
+  void addDistanceComponent(std::string description, ad::physics::Distance distance);
+  void addDistanceComponent(std::string description, const ad::physics::Speed distance);
+
+  // Template second argument
+  template <typename T>
+  void addDistanceComponent(std::string description, T distance)
+  {
+    distance_component.push_back(std::make_pair(description, static_cast<double>(distance)));
+  }
+};
+
 class RssLogger
 {
 public:
+
+  /**
+   * @brief SafeDistanceComponents
+   */
+  std::vector<SafeDistanceComponent> safe_distance_components;
+
+  /**
+   * @brief Add empty safe distance component
+   */
+  void createSafeDistanceComponent();
+
+  void addDistanceComponent(std::string description, ad::physics::Distance distance);
+
   /**
    * @brief getMessage
    * @return return all the messages in string format.

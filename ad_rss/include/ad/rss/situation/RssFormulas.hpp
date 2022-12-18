@@ -48,7 +48,7 @@ bool calculateLongitudinalDistanceOffsetAfterStatedBrakingPattern(physics::Speed
                                                                   physics::Duration const &responseTime,
                                                                   physics::Acceleration const &acceleration,
                                                                   physics::Acceleration const &deceleration,
-                                                                  physics::Distance &distanceOffset);
+                                                                  physics::Distance &distanceOffset, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Calculate the lateral distance offset of a vehicle when applying the \a "stated braking pattern" with given
@@ -87,7 +87,7 @@ bool calculateLateralDistanceOffsetAfterStatedBrakingPattern(physics::Speed cons
  */
 bool calculateSafeLongitudinalDistanceSameDirection(VehicleState const &leadingVehicle,
                                                     VehicleState const &followingVehicle,
-                                                    physics::Distance &safeDistance);
+                                                    physics::Distance &safeDistance, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Check if the longitudinal distance between the two vehicles is safe.
@@ -136,7 +136,7 @@ bool checkSafeLongitudinalDistanceSameDirection(VehicleState const &leadingVehic
  */
 bool calculateSafeLongitudinalDistanceOppositeDirection(VehicleState const &correctVehicle,
                                                         VehicleState const &oppositeVehicle,
-                                                        physics::Distance &safeDistance);
+                                                        physics::Distance &safeDistance, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Check if the longitudinal distance between to vehicles driving in opposite direction is safe.
@@ -164,7 +164,7 @@ bool checkSafeLongitudinalDistanceOppositeDirection(VehicleState const &correctV
                                                     VehicleState const &oppositeVehicle,
                                                     physics::Distance const &vehicleDistance,
                                                     physics::Distance &safeDistance,
-                                                    bool &isDistanceSafe);
+                                                    bool &isDistanceSafe, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Check if the vehicle can safely break longitudinaly in front of the intersection.

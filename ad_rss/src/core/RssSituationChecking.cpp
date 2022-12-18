@@ -190,6 +190,8 @@ bool RssSituationChecking::checkSituations(situation::SituationSnapshot const &s
 
     for (auto it = situationSnapshot.situations.begin(); (it != situationSnapshot.situations.end()) && result; ++it)
     {
+      mRssLogger_->createSafeDistanceComponent();
+      mRssLogger_->safe_distance_components.back().id = it->situationId ;
       result = checkSituationInputRangeChecked(*it, rssStateSnapshot);
     }
   }

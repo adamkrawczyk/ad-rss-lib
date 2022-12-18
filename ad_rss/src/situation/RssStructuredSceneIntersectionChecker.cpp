@@ -47,7 +47,7 @@ bool RssStructuredSceneIntersectionChecker::checkLateralIntersect(Situation cons
                                              situation.egoVehicleState.dynamics.alphaLon.accelMax,
                                              situation.egoVehicleState.dynamics.alphaLon.brakeMin,
                                              situation.egoVehicleState.distanceToEnterIntersection,
-                                             timeToReachEgo);
+                                             timeToReachEgo, mRssLogger_);
 
   result = result
     && calculateTimeToCoverDistance(situation.otherVehicleState.velocity.speedLon.maximum,
@@ -56,7 +56,7 @@ bool RssStructuredSceneIntersectionChecker::checkLateralIntersect(Situation cons
                                     situation.otherVehicleState.dynamics.alphaLon.accelMax,
                                     situation.otherVehicleState.dynamics.alphaLon.brakeMin,
                                     situation.otherVehicleState.distanceToEnterIntersection,
-                                    timeToReachOther);
+                                    timeToReachOther, mRssLogger_);
 
   result = result
     && calculateTimeToCoverDistance(situation.egoVehicleState.velocity.speedLon.minimum,
@@ -65,7 +65,7 @@ bool RssStructuredSceneIntersectionChecker::checkLateralIntersect(Situation cons
                                     situation.egoVehicleState.dynamics.alphaLon.brakeMax,
                                     situation.egoVehicleState.dynamics.alphaLon.brakeMax,
                                     situation.egoVehicleState.distanceToLeaveIntersection,
-                                    timeToLeaveEgo);
+                                    timeToLeaveEgo, mRssLogger_);
 
   result = result
     && calculateTimeToCoverDistance(situation.otherVehicleState.velocity.speedLon.minimum,
@@ -74,7 +74,7 @@ bool RssStructuredSceneIntersectionChecker::checkLateralIntersect(Situation cons
                                     situation.otherVehicleState.dynamics.alphaLon.brakeMax,
                                     situation.otherVehicleState.dynamics.alphaLon.brakeMax,
                                     situation.otherVehicleState.distanceToLeaveIntersection,
-                                    timeToLeaveOther);
+                                    timeToLeaveOther, mRssLogger_);
 
   if (result)
   {

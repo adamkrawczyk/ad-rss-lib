@@ -94,7 +94,7 @@ private:
    * @returns false if a failure occurred during calculations, true otherwise
    */
   bool calculateUnstructuredSceneStateInfo(situation::VehicleState const &egoState,
-                                           state::UnstructuredSceneStateInformation &stateInfo) const;
+                                           state::UnstructuredSceneStateInformation &stateInfo);
 
   /**
    * @brief Calculate the unstructured scene state

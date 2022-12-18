@@ -18,6 +18,7 @@
 #include "ad/rss/situation/Physics.hpp"
 #include "ad/rss/situation/VehicleState.hpp"
 #include "ad/rss/unstructured/Geometry.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 
 /*!
  * @brief namespace ad
@@ -53,7 +54,7 @@ public:
    */
   bool calculateTrajectorySets(situation::VehicleState const &vehicleState,
                                Polygon &brakePolygon,
-                               Polygon &continueForwardPolygon);
+                               Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 private:
   /**
@@ -82,7 +83,7 @@ private:
    */
   bool getResponseTimeTrajectoryPoints(situation::VehicleState const &vehicleState,
                                        TrajectorySetStep &frontSide,
-                                       TrajectorySetStep &backSide) const;
+                                       TrajectorySetStep &backSide, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate all trajectory points at response time
@@ -97,7 +98,7 @@ private:
   bool getResponseTimeTrajectoryPoints(situation::VehicleState const &vehicleState,
                                        physics::Acceleration const &acceleration,
                                        physics::RatioValue const &ratioDiff,
-                                       TrajectorySetStep &step) const;
+                                       TrajectorySetStep &step, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate a single trajectory point with changing radius
@@ -116,7 +117,7 @@ private:
                                 ad::physics::Duration const &duration,
                                 ad::physics::Acceleration const &acceleration,
                                 ad::physics::RatioValue const &yawRateChangeRatio,
-                                TrajectoryPoint &resultTrajectoryPoint) const;
+                                TrajectoryPoint &resultTrajectoryPoint, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate a next trajectory point on a circle
@@ -131,7 +132,7 @@ private:
   bool calculateTrajectoryPointOnCircle(TrajectoryPoint &currentPoint,
                                         physics::Acceleration const &acceleration,
                                         physics::Duration const &duration,
-                                        ::ad::rss::world::RssDynamics const &dynamics) const;
+                                        ::ad::rss::world::RssDynamics const &dynamics, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate a time in movement until response time
@@ -144,7 +145,7 @@ private:
    */
   bool getTimeInMovement(ad::physics::Speed const &speed,
                          ad::physics::Acceleration const &acceleration,
-                         ad::physics::Duration &timeInMovement) const;
+                         ad::physics::Duration &timeInMovement, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate the brake trajectory set
@@ -163,7 +164,7 @@ private:
                       TrajectorySetStep const &responseTimeFrontSide,
                       TrajectorySetStep const &responseTimeBackSide,
                       Polygon &resultPolygon,
-                      TrajectorySetStepVehicleLocation &brakeMinStepVehicleLocation) const;
+                      TrajectorySetStepVehicleLocation &brakeMinStepVehicleLocation, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate the continue forward trajectory set
@@ -182,7 +183,7 @@ private:
                                 TrajectorySetStep const &responseTimeFrontSide,
                                 Polygon const &brakePolygon,
                                 TrajectorySetStepVehicleLocation const &brakeMinStepVehicleLocation,
-                                Polygon &resultPolygon) const;
+                                Polygon &resultPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate the trajectory set step for a movement on a circle
@@ -197,7 +198,7 @@ private:
   bool calculateTrajectorySetStepOnCircle(situation::VehicleState const &vehicleState,
                                           physics::Duration const &timeAfterResponseTime,
                                           physics::Acceleration const &acceleration,
-                                          TrajectorySetStep &step) const;
+                                          TrajectorySetStep &step, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 };
 
 } // namespace unstructured

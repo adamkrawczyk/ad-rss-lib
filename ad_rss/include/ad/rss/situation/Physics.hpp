@@ -19,6 +19,7 @@
 #include "ad/physics/Distance.hpp"
 #include "ad/physics/Duration.hpp"
 #include "ad/physics/Speed.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 
 /*!
  * @brief namespace ad
@@ -101,7 +102,7 @@ bool calculateAcceleratedLimitedMovement(physics::Speed const currentSpeed,
                                          physics::Acceleration const acceleration,
                                          physics::Duration const duration,
                                          physics::Speed &resultingSpeed,
-                                         physics::Distance &distanceOffset);
+                                         physics::Distance &distanceOffset, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Calculate the time needed to cover a given distance
@@ -128,7 +129,7 @@ bool calculateTimeToCoverDistance(physics::Speed const currentSpeed,
                                   physics::Acceleration const aUntilResponseTime,
                                   physics::Acceleration const aAfterResponseTime,
                                   physics::Distance const distanceToCover,
-                                  physics::Duration &requiredTime);
+                                  physics::Duration &requiredTime, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Calculate the speed and distance offset after a given duration in a two phased limited constant accelerated
@@ -155,7 +156,7 @@ bool calculateSpeedAndDistanceOffset(physics::Duration const duration,
                                      physics::Acceleration const aUntilReponseTime,
                                      physics::Acceleration const aAfterResponseTime,
                                      physics::Speed &resultingSpeed,
-                                     physics::Distance &distanceOffset);
+                                     physics::Distance &distanceOffset, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 /**
  * @brief Calculate the stopping time in a two phased limited constant accelerated movement
@@ -179,7 +180,7 @@ bool calculateTimeToStop(physics::Speed const currentSpeed,
                          physics::Speed const maxSpeedOnAcceleration,
                          physics::Acceleration const aUntilResponseTime,
                          physics::Acceleration const aAfterResponseTime,
-                         physics::Duration &stopDuration);
+                         physics::Duration &stopDuration, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 } // namespace situation
 } // namespace rss

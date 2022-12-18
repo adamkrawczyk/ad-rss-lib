@@ -15,6 +15,7 @@
 #include "TrajectoryCommon.hpp"
 #include "ad/rss/situation/VehicleState.hpp"
 #include "ad/rss/unstructured/Geometry.hpp"
+#include "ad/rss/helpers/RssLogger.hpp"
 
 /*!
  * @brief namespace ad
@@ -60,7 +61,7 @@ public:
    */
   bool calculateTrajectorySets(situation::VehicleState const &vehicleState,
                                Polygon &brakePolygon,
-                               Polygon &continueForwardPolygon);
+                               Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger);
 
 private:
   /**
@@ -74,7 +75,7 @@ private:
    */
   bool getResponseTimeTrajectoryPoints(situation::VehicleState const &vehicleState,
                                        TrajectorySetStep &frontSide,
-                                       TrajectorySetStep &backSide) const;
+                                       TrajectorySetStep &backSide, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate a single trajectory point
@@ -91,7 +92,7 @@ private:
                                 world::RssDynamics const &dynamics,
                                 physics::Duration const &duration,
                                 ad::physics::Acceleration const &acceleration,
-                                ad::physics::RatioValue const &yawRateChangeRatio) const;
+                                ad::physics::RatioValue const &yawRateChangeRatio, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate a single trajectory point
@@ -156,7 +157,7 @@ private:
   bool calculateTrajectorySetsStandingStill(situation::VehicleState const &vehicleState,
                                             physics::Duration const &timeToStop,
                                             Polygon &brakePolygon,
-                                            Polygon &continueForwardPolygon) const;
+                                            Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 
   /**
    * @brief Calculate the trajectory sets if pedestrian is currently moving
@@ -171,7 +172,7 @@ private:
   bool calculateTrajectorySetsMoving(situation::VehicleState const &vehicleState,
                                      physics::Duration const &timeToStop,
                                      Polygon &brakePolygon,
-                                     Polygon &continueForwardPolygon) const;
+                                     Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger) const;
 };
 
 } // namespace unstructured

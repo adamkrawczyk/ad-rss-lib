@@ -42,25 +42,27 @@ bool calculateLongitudinalDistanceOffsetAfterStatedBrakingPattern(Speed const &c
                                                                   Duration const &responseTime,
                                                                   Acceleration const &acceleration,
                                                                   Acceleration const &deceleration,
-                                                                  Distance &distanceOffset)
+                                                                  Distance &distanceOffset, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   Speed resultingSpeed = Speed(0.);
   Distance distanceOffsetAfterResponseTime = Distance(0.);
   bool result = calculateAcceleratedLimitedMovement(
-    currentSpeed, maxSpeedOnAcceleration, acceleration, responseTime, resultingSpeed, distanceOffsetAfterResponseTime);
+    currentSpeed, maxSpeedOnAcceleration, acceleration, responseTime, resultingSpeed, distanceOffsetAfterResponseTime, mRssLogger);
 
   Distance distanceToStop = Distance(0.);
   if (std::signbit(static_cast<double>(resultingSpeed)) != std::signbit(static_cast<double>(deceleration)))
   {
     // if speed after stated braking pattern has the same direction as the acceleration
     // further braking to full stop in that moving direction has to be added
-    result = result && calculateStoppingDistance(resultingSpeed, deceleration, distanceToStop);
+    result = result && calculateStoppingDistance(resultingSpeed, deceleration, distanceToStop); // distanceToStop should be a third component of the equation
   }
 
   if (result)
   {
     distanceOffset = distanceOffsetAfterResponseTime + distanceToStop;
   }
+
+  mRssLogger->safe_distance_components.back().addDistanceComponent("followingVehicleDistToStop-3rdComponent", distanceToStop);
 
   return result;
 }
@@ -103,7 +105,7 @@ bool calculateLateralDistanceOffsetAfterStatedBrakingPattern(Speed const &curren
 
 bool calculateSafeLongitudinalDistanceSameDirection(VehicleState const &leadingVehicle,
                                                     VehicleState const &followingVehicle,
-                                                    Distance &safeDistance)
+                                                    Distance &safeDistance, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   if (!vehicleStateWithinValidInputRange(leadingVehicle) || !vehicleStateWithinValidInputRange(followingVehicle))
   {
@@ -118,17 +120,23 @@ bool calculateSafeLongitudinalDistanceSameDirection(VehicleState const &leadingV
     followingVehicle.dynamics.responseTime,
     followingVehicle.dynamics.alphaLon.accelMax,
     followingVehicle.dynamics.alphaLon.brakeMin,
-    distanceStatedBraking);
+    distanceStatedBraking, mRssLogger);
   Distance distanceMaxBrake = Distance(0.);
   result = result
     && calculateStoppingDistance(
              leadingVehicle.velocity.speedLon.minimum, leadingVehicle.dynamics.alphaLon.brakeMax, distanceMaxBrake);
 
+  // the stopping distance is is the v^2 / 2a
   if (result)
   {
     safeDistance = distanceStatedBraking - distanceMaxBrake;
     safeDistance = std::max(safeDistance, Distance(0.));
   }
+  
+  // Logging 
+  mRssLogger->safe_distance_components.back().addDistanceComponent("followingVehicleSpeedLon", followingVehicle.velocity.speedLon.maximum);
+  mRssLogger->safe_distance_components.back().addDistanceComponent("leadingVehicleSpeedLonMin", leadingVehicle.velocity.speedLon.minimum);
+  mRssLogger->safe_distance_components.back().addDistanceComponent("leadingVehicleStoppingDist-4thComponent", distanceMaxBrake);
 
   return result;
 }
@@ -142,15 +150,13 @@ bool checkSafeLongitudinalDistanceSameDirection(VehicleState const &leadingVehic
 {
   if (vehicleDistance < Distance(0.))
   {
-    mRssLogger->logInfo("checkSafeLongitudinalDistanceSameDirection: vehicleDistance < 0, vehicleDistance: "
-                        + std::to_string(vehicleDistance));
     return false;
   }
 
   isDistanceSafe = false;
   safeDistance = std::numeric_limits<physics::Distance>::max();
 
-  bool const result = calculateSafeLongitudinalDistanceSameDirection(leadingVehicle, followingVehicle, safeDistance);
+  bool const result = calculateSafeLongitudinalDistanceSameDirection(leadingVehicle, followingVehicle, safeDistance, mRssLogger);
 
   if (vehicleDistance > safeDistance)
   {
@@ -160,13 +166,17 @@ bool checkSafeLongitudinalDistanceSameDirection(VehicleState const &leadingVehic
   {
     mRssLogger->logInfo("checkSafeLongitudinalDistanceSameDirection: vehicleDistance < safeDistance, vehicleDistance: "
                         + std::to_string(vehicleDistance) + ", safeDistance: " + std::to_string(safeDistance));
+      for(const auto & distance_component : mRssLogger->safe_distance_components.back().distance_component )
+      {
+        mRssLogger->logCritical("For object: " + std::to_string(mRssLogger->safe_distance_components.back().id) + ", safe_distance_components, " + distance_component.first + ", value: " + std::to_string(distance_component.second));
+      }
   }
   return result;
 }
 
 bool calculateSafeLongitudinalDistanceOppositeDirection(VehicleState const &correctVehicle,
                                                         VehicleState const &oppositeVehicle,
-                                                        Distance &safeDistance)
+                                                        Distance &safeDistance, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   if (!vehicleStateWithinValidInputRange(correctVehicle) || !vehicleStateWithinValidInputRange(oppositeVehicle))
   {
@@ -181,7 +191,7 @@ bool calculateSafeLongitudinalDistanceOppositeDirection(VehicleState const &corr
     correctVehicle.dynamics.responseTime,
     correctVehicle.dynamics.alphaLon.accelMax,
     correctVehicle.dynamics.alphaLon.brakeMinCorrect,
-    distanceStatedBrakingCorrect);
+    distanceStatedBrakingCorrect, mRssLogger);
 
   Distance distanceStatedBrakingOpposite = Distance(0.);
 
@@ -193,7 +203,7 @@ bool calculateSafeLongitudinalDistanceOppositeDirection(VehicleState const &corr
       oppositeVehicle.dynamics.responseTime,
       oppositeVehicle.dynamics.alphaLon.accelMax,
       oppositeVehicle.dynamics.alphaLon.brakeMin,
-      distanceStatedBrakingOpposite);
+      distanceStatedBrakingOpposite, mRssLogger);
   }
 
   if (result)
@@ -208,7 +218,7 @@ bool checkSafeLongitudinalDistanceOppositeDirection(VehicleState const &correctV
                                                     VehicleState const &oppositeVehicle,
                                                     Distance const &vehicleDistance,
                                                     Distance &safeDistance,
-                                                    bool &isDistanceSafe)
+                                                    bool &isDistanceSafe, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   if (vehicleDistance < Distance(0.))
   {
@@ -217,7 +227,7 @@ bool checkSafeLongitudinalDistanceOppositeDirection(VehicleState const &correctV
 
   isDistanceSafe = false;
   safeDistance = std::numeric_limits<physics::Distance>::max();
-  bool const result = calculateSafeLongitudinalDistanceOppositeDirection(correctVehicle, oppositeVehicle, safeDistance);
+  bool const result = calculateSafeLongitudinalDistanceOppositeDirection(correctVehicle, oppositeVehicle, safeDistance, mRssLogger);
 
   if (vehicleDistance > safeDistance)
   {
@@ -245,7 +255,7 @@ bool checkStopInFrontIntersection(VehicleState const &vehicle,
     vehicle.dynamics.responseTime,
     vehicle.dynamics.alphaLon.accelMax,
     vehicle.dynamics.alphaLon.brakeMin,
-    safeDistance);
+    safeDistance, mRssLogger);
 
   if (safeDistance < vehicle.distanceToEnterIntersection)
   {

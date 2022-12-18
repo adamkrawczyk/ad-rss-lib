@@ -181,6 +181,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
 
     // The ego vehicle is leading in this situation so we don't need to break longitudinal
     rssState.response = state::LongitudinalResponse::None;
+    mRssLogger_->safe_distance_components.back().addDistanceComponent("Ego leading", 1.0);
 
     result = checkSafeLongitudinalDistanceSameDirection(situation.egoVehicleState,
                                                         situation.otherVehicleState,
@@ -192,6 +193,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
   else
   {
     rssState.rssStateInformation.evaluator = state::RssStateEvaluator::LongitudinalDistanceSameDirectionOtherInFront;
+    mRssLogger_->safe_distance_components.back().addDistanceComponent("Ego following", 1.0);
 
     result = checkSafeLongitudinalDistanceSameDirection(situation.otherVehicleState,
                                                         situation.egoVehicleState,
@@ -205,6 +207,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
   if (isSafe)
   {
     rssState.response = state::LongitudinalResponse::None;
+    mRssLogger_->safe_distance_components.back().is_safe = true;
   }
 
   return result;
@@ -228,7 +231,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppo
                                                             situation.otherVehicleState,
                                                             situation.relativePosition.longitudinalDistance,
                                                             rssState.rssStateInformation.safeDistance,
-                                                            isSafe);
+                                                            isSafe, mRssLogger_);
     if (!isSafe)
     {
       mRssLogger_->logInfo("RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppositeDirection: "
@@ -246,7 +249,7 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppo
                                                             situation.egoVehicleState,
                                                             situation.relativePosition.longitudinalDistance,
                                                             rssState.rssStateInformation.safeDistance,
-                                                            isSafe);
+                                                            isSafe, mRssLogger_);
     if (!isSafe)
     {
       mRssLogger_->logInfo("RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateOppositeDirection: "

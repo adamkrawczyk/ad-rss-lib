@@ -104,8 +104,7 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
 
         if (currentState.situationType == situation::SituationType::Unstructured)
         {
-          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Unstructured state is dangerous: ",
-                                currentState);
+          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> The state is dangerous, state type is Unstructured: ", currentState);
           combineState(currentState.unstructuredSceneState,
                        driveAwayBrakeMin,
                        unstructuredDriveAwayToBrakeTransitionOccurred,
@@ -115,8 +114,7 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
         }
         else // structured
         {
-          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Structured state is dangerous: ",
-                                currentState);
+          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> The state is dangerous, state type is " + std::to_string(currentState.situationType)+ " : ", currentState);
 
           combineState(currentState.longitudinalState,
                        response.longitudinalResponse,

@@ -29,7 +29,7 @@ namespace unstructured {
 
 bool TrajectoryVehicle::calculateTrajectorySets(situation::VehicleState const &vehicleState,
                                                 Polygon &brakePolygon,
-                                                Polygon &continueForwardPolygon)
+                                                Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   ad::physics::Duration timeToStop;
   auto result = situation::calculateTimeToStop(vehicleState.objectState.speed,
@@ -37,13 +37,13 @@ bool TrajectoryVehicle::calculateTrajectorySets(situation::VehicleState const &v
                                                vehicleState.dynamics.maxSpeedOnAcceleration,
                                                vehicleState.dynamics.alphaLon.accelMax,
                                                vehicleState.dynamics.alphaLon.brakeMin,
-                                               timeToStop);
+                                               timeToStop, mRssLogger);
 
   TrajectorySetStep responseTimeFrontSide;
   TrajectorySetStep responseTimeBackSide;
   if (result)
   {
-    result = getResponseTimeTrajectoryPoints(vehicleState, responseTimeFrontSide, responseTimeBackSide);
+    result = getResponseTimeTrajectoryPoints(vehicleState, responseTimeFrontSide, responseTimeBackSide, mRssLogger);
     if (!result)
     {
       spdlog::debug("TrajectoryVehicle::calculateTrajectorySets>> Could not calculate reponse time trajectory points.");
@@ -67,7 +67,7 @@ bool TrajectoryVehicle::calculateTrajectorySets(situation::VehicleState const &v
                             responseTimeFrontSide,
                             responseTimeBackSide,
                             brakePolygon,
-                            brakeMinStepVehicleLocations);
+                            brakeMinStepVehicleLocations, mRssLogger);
     if (!result)
     {
       spdlog::debug("TrajectoryVehicle::calculateTrajectorySets>> calculateBrake() failed.");
@@ -81,7 +81,7 @@ bool TrajectoryVehicle::calculateTrajectorySets(situation::VehicleState const &v
                                       responseTimeFrontSide,
                                       brakePolygon,
                                       brakeMinStepVehicleLocations,
-                                      continueForwardPolygon);
+                                      continueForwardPolygon, mRssLogger);
     if (!result)
     {
       // fallback
@@ -107,7 +107,7 @@ TrajectoryVehicle::calculateYawRate(ad::physics::AngularVelocity const &yawRate,
 
 bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState const &vehicleState,
                                                         TrajectorySetStep &frontSide,
-                                                        TrajectorySetStep &backSide) const
+                                                        TrajectorySetStep &backSide, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   //-------------
   // back
@@ -117,7 +117,7 @@ bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState 
   backSide.left.reserve(vehicleState.dynamics.unstructuredSettings.vehicleBackIntermediateYawRateChangeRatioSteps + 1);
   backSide.right.reserve(vehicleState.dynamics.unstructuredSettings.vehicleBackIntermediateYawRateChangeRatioSteps + 1);
   auto result
-    = getResponseTimeTrajectoryPoints(vehicleState, vehicleState.dynamics.alphaLon.brakeMax, ratioDiffBack, backSide);
+    = getResponseTimeTrajectoryPoints(vehicleState, vehicleState.dynamics.alphaLon.brakeMax, ratioDiffBack, backSide, mRssLogger);
 
   //-------------
   // front
@@ -131,7 +131,7 @@ bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState 
     frontSide.right.reserve(vehicleState.dynamics.unstructuredSettings.vehicleFrontIntermediateYawRateChangeRatioSteps
                             + 1);
     result = getResponseTimeTrajectoryPoints(
-      vehicleState, vehicleState.dynamics.alphaLon.accelMax, ratioDiffFront, frontSide);
+      vehicleState, vehicleState.dynamics.alphaLon.accelMax, ratioDiffFront, frontSide, mRssLogger);
   }
   return result;
 }
@@ -139,10 +139,10 @@ bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState 
 bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState const &vehicleState,
                                                         physics::Acceleration const &acceleration,
                                                         physics::RatioValue const &ratioDiff,
-                                                        TrajectorySetStep &step) const
+                                                        TrajectorySetStep &step, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   physics::Duration timeInMovementUntilResponseTime = vehicleState.dynamics.responseTime;
-  auto result = getTimeInMovement(vehicleState.objectState.speed, acceleration, timeInMovementUntilResponseTime);
+  auto result = getTimeInMovement(vehicleState.objectState.speed, acceleration, timeInMovementUntilResponseTime, mRssLogger);
 
   // right
   for (auto ratioValue = physics::RatioValue(-1.0); (ratioValue < physics::RatioValue(0.0)) && result;
@@ -151,7 +151,7 @@ bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState 
     auto currentPoint = TrajectoryPoint(vehicleState);
     TrajectoryPoint pt;
     result = calculateTrajectoryPoint(
-      currentPoint, vehicleState.dynamics, timeInMovementUntilResponseTime, acceleration, ratioValue, pt);
+      currentPoint, vehicleState.dynamics, timeInMovementUntilResponseTime, acceleration, ratioValue, pt, mRssLogger);
     step.right.push_back(pt);
   }
 
@@ -161,7 +161,7 @@ bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState 
     auto currentPoint = TrajectoryPoint(vehicleState);
     TrajectoryPoint pt;
     result = calculateTrajectoryPoint(
-      currentPoint, vehicleState.dynamics, timeInMovementUntilResponseTime, acceleration, ratioValue, pt);
+      currentPoint, vehicleState.dynamics, timeInMovementUntilResponseTime, acceleration, ratioValue, pt, mRssLogger);
     step.left.push_back(pt);
   }
 
@@ -173,7 +173,7 @@ bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState 
                                       timeInMovementUntilResponseTime,
                                       acceleration,
                                       physics::RatioValue(0.),
-                                      step.center);
+                                      step.center, mRssLogger);
   }
 
   return result;
@@ -181,7 +181,7 @@ bool TrajectoryVehicle::getResponseTimeTrajectoryPoints(situation::VehicleState 
 
 bool TrajectoryVehicle::getTimeInMovement(ad::physics::Speed const &speed,
                                           ad::physics::Acceleration const &acceleration,
-                                          ad::physics::Duration &timeInMovement) const
+                                          ad::physics::Duration &timeInMovement, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   auto result = true;
   if (acceleration < physics::Acceleration(0.))
@@ -194,7 +194,7 @@ bool TrajectoryVehicle::getTimeInMovement(ad::physics::Speed const &speed,
     {
       physics::Duration timeToStop;
       result
-        = situation::calculateTimeToStop(speed, physics::Duration(0.), speed, acceleration, acceleration, timeToStop);
+        = situation::calculateTimeToStop(speed, physics::Duration(0.), speed, acceleration, acceleration, timeToStop, mRssLogger);
 
       timeInMovement = std::min(timeInMovement, timeToStop);
     }
@@ -207,7 +207,7 @@ bool TrajectoryVehicle::calculateTrajectoryPoint(TrajectoryPoint const &currentP
                                                  ad::physics::Duration const &duration,
                                                  ad::physics::Acceleration const &acceleration,
                                                  ad::physics::RatioValue const &yawRateChangeRatio,
-                                                 TrajectoryPoint &resultTrajectoryPoint) const
+                                                 TrajectoryPoint &resultTrajectoryPoint, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   auto result = true;
   resultTrajectoryPoint = currentPoint;
@@ -230,7 +230,7 @@ bool TrajectoryVehicle::calculateTrajectoryPoint(TrajectoryPoint const &currentP
     resultTrajectoryPoint.yawRate = calculateYawRate(
       currentPoint.yawRate, currentTime, dynamics.unstructuredSettings.vehicleYawRateChange, yawRateChangeRatio);
 
-    result = calculateTrajectoryPointOnCircle(resultTrajectoryPoint, acceleration, timeStep, dynamics);
+    result = calculateTrajectoryPointOnCircle(resultTrajectoryPoint, acceleration, timeStep, dynamics, mRssLogger);
   }
 
   return result;
@@ -239,7 +239,7 @@ bool TrajectoryVehicle::calculateTrajectoryPoint(TrajectoryPoint const &currentP
 bool TrajectoryVehicle::calculateTrajectoryPointOnCircle(TrajectoryPoint &currentPoint,
                                                          physics::Acceleration const &acceleration,
                                                          physics::Duration const &duration,
-                                                         ::ad::rss::world::RssDynamics const &dynamics) const
+                                                         ::ad::rss::world::RssDynamics const &dynamics, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   ad::physics::Distance currentDistance;
   physics::Speed finalSpeed;
@@ -250,7 +250,7 @@ bool TrajectoryVehicle::calculateTrajectoryPointOnCircle(TrajectoryPoint &curren
   }
 
   auto result = situation::calculateAcceleratedLimitedMovement(
-    currentPoint.speed, dynamics.maxSpeedOnAcceleration, acceleration, duration, finalSpeed, currentDistance);
+    currentPoint.speed, dynamics.maxSpeedOnAcceleration, acceleration, duration, finalSpeed, currentDistance, mRssLogger);
   if (!result)
   {
     spdlog::debug(
@@ -291,7 +291,7 @@ bool TrajectoryVehicle::calculateBrake(situation::VehicleState const &vehicleSta
                                        TrajectorySetStep const &responseTimeFrontSide,
                                        TrajectorySetStep const &responseTimeBackSide,
                                        Polygon &resultPolygon,
-                                       TrajectorySetStepVehicleLocation &brakeMinStepVehicleLocation) const
+                                       TrajectorySetStepVehicleLocation &brakeMinStepVehicleLocation, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   //-------------
   // back
@@ -307,7 +307,7 @@ bool TrajectoryVehicle::calculateBrake(situation::VehicleState const &vehicleSta
                                             vehicleState.dynamics.maxSpeedOnAcceleration,
                                             vehicleState.dynamics.alphaLon.brakeMax,
                                             vehicleState.dynamics.alphaLon.brakeMax,
-                                            timeToStopBrakeMax);
+                                            timeToStopBrakeMax, mRssLogger);
     if (!result)
     {
       spdlog::debug(
@@ -320,7 +320,7 @@ bool TrajectoryVehicle::calculateBrake(situation::VehicleState const &vehicleSta
   if (result)
   {
     calculateTrajectorySetStepOnCircle(
-      vehicleState, timeToStopBrakeMax, vehicleState.dynamics.alphaLon.brakeMax, backSide);
+      vehicleState, timeToStopBrakeMax, vehicleState.dynamics.alphaLon.brakeMax, backSide, mRssLogger);
   }
   if (result)
   {
@@ -342,7 +342,7 @@ bool TrajectoryVehicle::calculateBrake(situation::VehicleState const &vehicleSta
     if (result)
     {
       result = calculateTrajectorySetStepOnCircle(
-        vehicleState, timeAfterResponseTime, vehicleState.dynamics.alphaLon.brakeMin, front);
+        vehicleState, timeAfterResponseTime, vehicleState.dynamics.alphaLon.brakeMin, front, mRssLogger);
     }
 
     // sides
@@ -362,7 +362,7 @@ bool TrajectoryVehicle::calculateBrake(situation::VehicleState const &vehicleSta
          ++itAcceleration)
     {
       physics::Duration calculationTime = timeAfterResponseTime;
-      result = getTimeInMovement(responseTimeFrontSide.center.speed, *itAcceleration, calculationTime);
+      result = getTimeInMovement(responseTimeFrontSide.center.speed, *itAcceleration, calculationTime, mRssLogger);
 
       if (result)
       {
@@ -371,7 +371,7 @@ bool TrajectoryVehicle::calculateBrake(situation::VehicleState const &vehicleSta
         sideStep.left.push_back(responseTimeFrontSide.left.back());
         sideStep.right.push_back(responseTimeFrontSide.right.front());
 
-        result = calculateTrajectorySetStepOnCircle(vehicleState, calculationTime, *itAcceleration, sideStep);
+        result = calculateTrajectorySetStepOnCircle(vehicleState, calculationTime, *itAcceleration, sideStep, mRssLogger);
         sideSteps.push_back(sideStep);
       }
       if (!result)
@@ -404,7 +404,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
                                                  TrajectorySetStep const &responseTimeFrontSide,
                                                  Polygon const &brakePolygon,
                                                  TrajectorySetStepVehicleLocation const &brakeMinStepVehicleLocation,
-                                                 Polygon &resultPolygon) const
+                                                 Polygon &resultPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   //-----------
   // Front
@@ -416,7 +416,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
   auto front = responseTimeFrontSide;
   // center-front, with no change of the current yaw rate
   auto result = calculateTrajectorySetStepOnCircle(
-    vehicleState, timeAfterResponseTime, vehicleState.dynamics.alphaLon.accelMax, front);
+    vehicleState, timeAfterResponseTime, vehicleState.dynamics.alphaLon.accelMax, front, mRssLogger);
   if (DEBUG_DRAWING_IS_ENABLED())
   {
     int idx = 0;
@@ -453,7 +453,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
                                       timeAfterResponseTime,
                                       vehicleState.dynamics.alphaLon.accelMax,
                                       ratioValue,
-                                      resultPt);
+                                      resultPt, mRssLogger);
     front.left.push_back(resultPt);
     if (DEBUG_DRAWING_IS_ENABLED())
     {
@@ -476,7 +476,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
                                       timeAfterResponseTime,
                                       vehicleState.dynamics.alphaLon.accelMax,
                                       ratioValue,
-                                      resultPt);
+                                      resultPt, mRssLogger);
     right.push_back(resultPt);
     if (DEBUG_DRAWING_IS_ENABLED())
     {
@@ -506,7 +506,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
   for (auto itAcceleration = accelerations.begin(); (itAcceleration != accelerations.end()) && result; ++itAcceleration)
   {
     physics::Duration calculationTime = timeAfterResponseTime;
-    result = getTimeInMovement(responseTimeFrontSide.center.speed, *itAcceleration, calculationTime);
+    result = getTimeInMovement(responseTimeFrontSide.center.speed, *itAcceleration, calculationTime, mRssLogger);
 
     TrajectorySetStep sideStep;
     if (result)
@@ -518,7 +518,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
                                         calculationTime,
                                         *itAcceleration,
                                         physics::RatioValue(1.0),
-                                        resultPt);
+                                        resultPt, mRssLogger);
       sideStep.left.push_back(resultPt);
       if (DEBUG_DRAWING_IS_ENABLED())
       {
@@ -534,7 +534,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
     {
       sideStep.center = responseTimeFrontSide.center;
       result
-        = calculateTrajectoryPointOnCircle(sideStep.center, *itAcceleration, calculationTime, vehicleState.dynamics);
+        = calculateTrajectoryPointOnCircle(sideStep.center, *itAcceleration, calculationTime, vehicleState.dynamics, mRssLogger);
     }
 
     // right
@@ -546,7 +546,7 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
                                         calculationTime,
                                         *itAcceleration,
                                         physics::RatioValue(-1.0),
-                                        resultPt);
+                                        resultPt, mRssLogger);
       sideStep.right.push_back(resultPt);
       if (DEBUG_DRAWING_IS_ENABLED())
       {
@@ -578,26 +578,26 @@ bool TrajectoryVehicle::calculateContinueForward(situation::VehicleState const &
 bool TrajectoryVehicle::calculateTrajectorySetStepOnCircle(situation::VehicleState const &vehicleState,
                                                            physics::Duration const &timeAfterResponseTime,
                                                            physics::Acceleration const &acceleration,
-                                                           TrajectorySetStep &step) const
+                                                           TrajectorySetStep &step, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   auto result = true;
 
   // left
   for (auto it = step.left.begin(); (it != step.left.end()) && result; ++it)
   {
-    result = calculateTrajectoryPointOnCircle(*it, acceleration, timeAfterResponseTime, vehicleState.dynamics);
+    result = calculateTrajectoryPointOnCircle(*it, acceleration, timeAfterResponseTime, vehicleState.dynamics, mRssLogger);
   }
 
   // center
   if (result)
   {
-    result = calculateTrajectoryPointOnCircle(step.center, acceleration, timeAfterResponseTime, vehicleState.dynamics);
+    result = calculateTrajectoryPointOnCircle(step.center, acceleration, timeAfterResponseTime, vehicleState.dynamics, mRssLogger);
   }
 
   // right
   for (auto it = step.right.begin(); (it != step.right.end()) && result; ++it)
   {
-    result = calculateTrajectoryPointOnCircle(*it, acceleration, timeAfterResponseTime, vehicleState.dynamics);
+    result = calculateTrajectoryPointOnCircle(*it, acceleration, timeAfterResponseTime, vehicleState.dynamics, mRssLogger);
   }
 
   return result;

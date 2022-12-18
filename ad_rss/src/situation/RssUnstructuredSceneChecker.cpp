@@ -28,7 +28,7 @@ RssUnstructuredSceneChecker::RssUnstructuredSceneChecker(std::shared_ptr<helpers
 }
 
 bool RssUnstructuredSceneChecker::calculateUnstructuredSceneStateInfo(
-  situation::VehicleState const &vehicleState, state::UnstructuredSceneStateInformation &stateInfo) const
+  situation::VehicleState const &vehicleState, state::UnstructuredSceneStateInformation &stateInfo)
 {
   bool result = true;
   unstructured::Polygon brake;
@@ -43,13 +43,13 @@ bool RssUnstructuredSceneChecker::calculateUnstructuredSceneStateInfo(
     case world::ObjectType::OtherVehicle:
     {
       unstructured::TrajectoryVehicle trajectoryVehicle;
-      result = trajectoryVehicle.calculateTrajectorySets(vehicleState, brake, continueForward);
+      result = trajectoryVehicle.calculateTrajectorySets(vehicleState, brake, continueForward, mRssLogger_);
       break;
     }
     case world::ObjectType::Pedestrian:
     {
       unstructured::TrajectoryPedestrian trajectoryPedestrian;
-      result = trajectoryPedestrian.calculateTrajectorySets(vehicleState, brake, continueForward);
+      result = trajectoryPedestrian.calculateTrajectorySets(vehicleState, brake, continueForward, mRssLogger_);
       break;
     }
     case world::ObjectType::ArtificialObject:
@@ -189,15 +189,10 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
   bool isSafeBrakeBoth = !egoBrakeOtherBrakeOverlap;
 
   auto isSafe = isSafeEgoMustBrake || isSafeOtherMustBrake || isSafeBrakeBoth;
-
-  mRssLogger_->logTrace("Situation ",
-                        situation.situationId,
-                        " safe check: isSafeEgoMustBrake: ",
-                        isSafeEgoMustBrake,
-                        ", isSafeOtherMustBrake: ",
-                        isSafeOtherMustBrake,
-                        ", isSafeBrakeBoth: ",
-                        isSafeBrakeBoth);
+  
+  spdlog::trace("Situation {} safe check: isSafeEgoMustBrake: {}, isSafeOtherMustBrake: {}, isSafeBrakeBoth: {}",
+                situation.situationId, isSafeEgoMustBrake,
+                isSafeOtherMustBrake, isSafeBrakeBoth);
   DrivingMode mode{DrivingMode::Invalid};
 
   if (isSafe)

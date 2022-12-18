@@ -83,7 +83,7 @@ bool calculateAcceleratedLimitedMovement(Speed const currentSpeed,
                                          Acceleration const acceleration,
                                          Duration const duration,
                                          Speed &resultingSpeed,
-                                         Distance &distanceOffset)
+                                         Distance &distanceOffset, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   if (duration < Duration(0.))
   {
@@ -114,14 +114,19 @@ bool calculateAcceleratedLimitedMovement(Speed const currentSpeed,
     Duration accelDuration = Duration(0.);
     if (acceleration != Acceleration(0.))
     {
+      // The resultingSpeed is the speed after the acceleration phase
       accelDuration = (resultingSpeed - currentSpeed) / acceleration;
     }
 
     Duration resultingSpeedDuration = duration - accelDuration;
 
-    distanceOffset = currentSpeed * duration;
-    distanceOffset += 0.5 * acceleration * accelDuration * accelDuration;
-    distanceOffset += (resultingSpeed - currentSpeed) * resultingSpeedDuration;
+    const auto followingVehicleDistTillBeginBrake = currentSpeed * duration;
+    distanceOffset = followingVehicleDistTillBeginBrake; // first part of the movement - distance till beginning of deceleration
+    const auto distanceIfAccelerateForReactionTime = (0.5 * acceleration * accelDuration * accelDuration) + (resultingSpeed - currentSpeed) * resultingSpeedDuration;
+    distanceOffset += distanceIfAccelerateForReactionTime; // second part of the movement - distance during acceleration
+    
+    mRssLogger->safe_distance_components.back().addDistanceComponent("followingVehicleDistTillBeginBrake-1stComponent", followingVehicleDistTillBeginBrake);
+    mRssLogger->safe_distance_components.back().addDistanceComponent("followingVehicleDistIfAccelerateForReactionTime-2ndComponent", distanceIfAccelerateForReactionTime);
   }
 
   return result;
@@ -156,7 +161,7 @@ bool calculateTimeForDistance(Speed const currentSpeed,
                               Speed const maxSpeedOnAcceleration,
                               Acceleration const acceleration,
                               Distance const distanceToCover,
-                              Duration &requiredTime)
+                              Duration &requiredTime, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   if (currentSpeed < Speed(0.))
   {
@@ -199,7 +204,7 @@ bool calculateTimeForDistance(Speed const currentSpeed,
                                                      acceleration,
                                                      accelerationDuration,
                                                      speed,
-                                                     distanceWhenReachingMaximalSpeed);
+                                                     distanceWhenReachingMaximalSpeed, mRssLogger);
         if ((speed != maxSpeedOnAcceleration) || (distanceWhenReachingMaximalSpeed > distanceToCover))
         {
           // in this case something went terribly wrong
@@ -225,7 +230,7 @@ bool calculateTimeToCoverDistance(Speed const currentSpeed,
                                   Acceleration const aUntilResponseTime,
                                   Acceleration const aAfterResponseTime,
                                   Distance const distanceToCover,
-                                  Duration &requiredTime)
+                                  Duration &requiredTime, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   if (distanceToCover < Distance(0.))
   {
@@ -240,7 +245,7 @@ bool calculateTimeToCoverDistance(Speed const currentSpeed,
                                                     aUntilResponseTime,
                                                     responseTime,
                                                     speedAfterResponseTime,
-                                                    distanceAfterResponseTime);
+                                                    distanceAfterResponseTime, mRssLogger);
 
   if (result)
   {
@@ -248,7 +253,7 @@ bool calculateTimeToCoverDistance(Speed const currentSpeed,
     {
       // already too far at responseTime
       result = calculateTimeForDistance(
-        currentSpeed, maxSpeedOnAcceleration, aUntilResponseTime, distanceToCover, requiredTime);
+        currentSpeed, maxSpeedOnAcceleration, aUntilResponseTime, distanceToCover, requiredTime, mRssLogger);
     }
     else if (speedAfterResponseTime == Speed(0.))
     {
@@ -273,7 +278,7 @@ bool calculateTimeToCoverDistance(Speed const currentSpeed,
                                             std::numeric_limits<Speed>::max(),
                                             aAfterResponseTime,
                                             remainingDistance,
-                                            requiredTime);
+                                            requiredTime, mRssLogger);
           requiredTime += responseTime;
         }
         else
@@ -295,7 +300,7 @@ bool calculateSpeedAndDistanceOffset(Duration const duration,
                                      Acceleration const aUntilResponseTime,
                                      Acceleration const aAfterResponseTime,
                                      Speed &resultingSpeed,
-                                     Distance &distanceOffset)
+                                     Distance &distanceOffset, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   auto const accelerationDurationUntilReponseTime = std::min(duration, responseTime);
   auto result = calculateAcceleratedLimitedMovement(currentSpeed,
@@ -303,7 +308,7 @@ bool calculateSpeedAndDistanceOffset(Duration const duration,
                                                     aUntilResponseTime,
                                                     accelerationDurationUntilReponseTime,
                                                     resultingSpeed,
-                                                    distanceOffset);
+                                                    distanceOffset, mRssLogger);
 
   if (result && (duration > responseTime))
   {
@@ -314,7 +319,7 @@ bool calculateSpeedAndDistanceOffset(Duration const duration,
                                                   aAfterResponseTime,
                                                   accelerationDurationAfterReponseTime,
                                                   resultingSpeed,
-                                                  distanceAfterResponseTime);
+                                                  distanceAfterResponseTime, mRssLogger);
     distanceOffset += distanceAfterResponseTime;
   }
   return result;
@@ -325,7 +330,7 @@ bool calculateTimeToStop(Speed const currentSpeed,
                          Speed const maxSpeedOnAcceleration,
                          Acceleration const aUntilResponseTime,
                          Acceleration const aAfterResponseTime,
-                         Duration &stopDuration)
+                         Duration &stopDuration, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   auto result = true;
   if ((aUntilResponseTime < Acceleration(0.)) && (currentSpeed <= Speed(0.)))
@@ -339,7 +344,7 @@ bool calculateTimeToStop(Speed const currentSpeed,
   {
     Distance distanceOffset;
     result = calculateAcceleratedLimitedMovement(
-      currentSpeed, maxSpeedOnAcceleration, aUntilResponseTime, responseTime, speedAtResponseTime, distanceOffset);
+      currentSpeed, maxSpeedOnAcceleration, aUntilResponseTime, responseTime, speedAtResponseTime, distanceOffset, mRssLogger);
   }
 
   if (result && (aAfterResponseTime >= Acceleration(0.)) && (speedAtResponseTime > Speed(0.)))

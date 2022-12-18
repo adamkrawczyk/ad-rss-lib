@@ -32,7 +32,7 @@ const ad::physics::Angle TrajectoryPedestrian::circleStepWidth(physics::c2PI / 2
 
 bool TrajectoryPedestrian::calculateTrajectorySets(situation::VehicleState const &vehicleState,
                                                    Polygon &brakePolygon,
-                                                   Polygon &continueForwardPolygon)
+                                                   Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger)
 {
   ad::physics::Duration timeToStop;
   auto result = situation::calculateTimeToStop(vehicleState.objectState.speed,
@@ -40,7 +40,7 @@ bool TrajectoryPedestrian::calculateTrajectorySets(situation::VehicleState const
                                                vehicleState.dynamics.maxSpeedOnAcceleration,
                                                vehicleState.dynamics.alphaLon.accelMax,
                                                vehicleState.dynamics.alphaLon.brakeMin,
-                                               timeToStop);
+                                               timeToStop, mRssLogger);
 
   if (DEBUG_DRAWING_IS_ENABLED())
   {
@@ -51,11 +51,11 @@ bool TrajectoryPedestrian::calculateTrajectorySets(situation::VehicleState const
   {
     if (vehicleState.objectState.speed == ad::physics::Speed(0.))
     {
-      result = calculateTrajectorySetsStandingStill(vehicleState, timeToStop, brakePolygon, continueForwardPolygon);
+      result = calculateTrajectorySetsStandingStill(vehicleState, timeToStop, brakePolygon, continueForwardPolygon, mRssLogger);
     }
     else
     {
-      result = calculateTrajectorySetsMoving(vehicleState, timeToStop, brakePolygon, continueForwardPolygon);
+      result = calculateTrajectorySetsMoving(vehicleState, timeToStop, brakePolygon, continueForwardPolygon, mRssLogger);
     }
   }
   DEBUG_DRAWING_POLYGON(brakePolygon, "red", "pedestrian_brake");
@@ -66,11 +66,11 @@ bool TrajectoryPedestrian::calculateTrajectorySets(situation::VehicleState const
 bool TrajectoryPedestrian::calculateTrajectorySetsMoving(situation::VehicleState const &vehicleState,
                                                          physics::Duration const &timeToStop,
                                                          Polygon &brakePolygon,
-                                                         Polygon &continueForwardPolygon) const
+                                                         Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   TrajectorySetStep responseTimeFrontSide;
   TrajectorySetStep responseTimeBackSide;
-  auto result = getResponseTimeTrajectoryPoints(vehicleState, responseTimeFrontSide, responseTimeBackSide);
+  auto result = getResponseTimeTrajectoryPoints(vehicleState, responseTimeFrontSide, responseTimeBackSide, mRssLogger);
   if (!result)
   {
     spdlog::debug(
@@ -96,7 +96,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsMoving(situation::VehicleState
       vehicleState.dynamics.maxSpeedOnAcceleration,
       vehicleState.dynamics.alphaLon.brakeMax,
       vehicleState.dynamics.alphaLon.brakeMax,
-      timeToStopBrakeMax);
+      timeToStopBrakeMax, mRssLogger);
     if (!result)
     {
       spdlog::debug("TrajectoryPedestrian::calculateTrajectorySets>> Could not calculate time to stop. speed {}, "
@@ -115,7 +115,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsMoving(situation::VehicleState
                                                             vehicleState.dynamics.alphaLon.brakeMax,
                                                             timeToStopBrakeMax,
                                                             unusedSpeed,
-                                                            brakeMaxDistanceAfterResponseTime);
+                                                            brakeMaxDistanceAfterResponseTime, mRssLogger);
   }
 
   physics::Distance brakeMinDistanceAfterResponseTime = physics::Distance(0.);
@@ -127,7 +127,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsMoving(situation::VehicleState
                                                             vehicleState.dynamics.alphaLon.brakeMin,
                                                             timeAfterResponseTime,
                                                             unusedSpeed,
-                                                            brakeMinDistanceAfterResponseTime);
+                                                            brakeMinDistanceAfterResponseTime, mRssLogger);
     if (!result)
     {
       spdlog::debug("TrajectoryPedestrian::calculateTrajectorySets>> Could not calculate speed and distance offset for "
@@ -146,7 +146,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsMoving(situation::VehicleState
                                                             vehicleState.dynamics.alphaLon.accelMax,
                                                             timeAfterResponseTime,
                                                             unusedSpeed,
-                                                            accelMaxDistanceAfterResponseTime);
+                                                            accelMaxDistanceAfterResponseTime, mRssLogger);
     if (!result)
     {
       spdlog::debug("TrajectoryPedestrian::calculateTrajectorySets>> Could not calculate speed and distance offset for "
@@ -176,7 +176,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsMoving(situation::VehicleState
                                                           vehicleState.dynamics.alphaLon.accelMax,
                                                           vehicleState.dynamics.responseTime,
                                                           unusedSpeed,
-                                                          accelMaxDistanceAtResponseTime);
+                                                          accelMaxDistanceAtResponseTime, mRssLogger);
   auto stepWidth = accelMaxDistanceAtResponseTime
     / (1 + vehicleState.dynamics.unstructuredSettings.pedestrianBrakeIntermediateAccelerationSteps);
   for (auto distance = stepWidth; distance < accelMaxDistanceAtResponseTime; distance += stepWidth)
@@ -324,7 +324,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsMoving(situation::VehicleState
 bool TrajectoryPedestrian::calculateTrajectorySetsStandingStill(situation::VehicleState const &vehicleState,
                                                                 physics::Duration const &timeToStop,
                                                                 Polygon &brakePolygon,
-                                                                Polygon &continueForwardPolygon) const
+                                                                Polygon &continueForwardPolygon, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   // If pedestrian is standing, he might start walking in any direction
   ad::physics::Speed speed;
@@ -336,7 +336,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsStandingStill(situation::Vehic
                                                            vehicleState.dynamics.alphaLon.accelMax,
                                                            vehicleState.dynamics.alphaLon.brakeMin,
                                                            speed,
-                                                           brakeMinMaxDistance);
+                                                           brakeMinMaxDistance, mRssLogger);
   calculateCircleArc(toPoint(vehicleState.objectState.centerPoint),
                      brakeMinMaxDistance,
                      ad::physics::Angle(0.),
@@ -354,7 +354,7 @@ bool TrajectoryPedestrian::calculateTrajectorySetsStandingStill(situation::Vehic
                                                         vehicleState.dynamics.alphaLon.accelMax,
                                                         vehicleState.dynamics.alphaLon.accelMax,
                                                         speed,
-                                                        accelMaxMaxDistance);
+                                                        accelMaxMaxDistance, mRssLogger);
     calculateCircleArc(toPoint(vehicleState.objectState.centerPoint),
                        accelMaxMaxDistance,
                        ad::physics::Angle(0.),
@@ -425,7 +425,7 @@ void TrajectoryPedestrian::calculateTrajectoryPointsStraight(physics::Distance c
 
 bool TrajectoryPedestrian::getResponseTimeTrajectoryPoints(situation::VehicleState const &vehicleState,
                                                            TrajectorySetStep &frontSide,
-                                                           TrajectorySetStep &backSide) const
+                                                           TrajectorySetStep &backSide, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   auto result = true;
   //-------------
@@ -441,7 +441,7 @@ bool TrajectoryPedestrian::getResponseTimeTrajectoryPoints(situation::VehicleSta
                                       vehicleState.dynamics,
                                       vehicleState.dynamics.responseTime,
                                       vehicleState.dynamics.alphaLon.brakeMax,
-                                      ratioValue);
+                                      ratioValue, mRssLogger);
     if (ratioValue == physics::RatioValue(0.))
     {
       backSide.center = pt;
@@ -469,7 +469,7 @@ bool TrajectoryPedestrian::getResponseTimeTrajectoryPoints(situation::VehicleSta
                                       vehicleState.dynamics,
                                       vehicleState.dynamics.responseTime,
                                       vehicleState.dynamics.alphaLon.accelMax,
-                                      ratioValue);
+                                      ratioValue, mRssLogger);
     if (ratioValue == physics::RatioValue(0.))
     {
       frontSide.center = pt;
@@ -491,11 +491,11 @@ bool TrajectoryPedestrian::calculateTrajectoryPoint(TrajectoryPoint &currentPoin
                                                     world::RssDynamics const &dynamics,
                                                     physics::Duration const &duration,
                                                     ad::physics::Acceleration const &acceleration,
-                                                    ad::physics::RatioValue const &angleChangeRatio) const
+                                                    ad::physics::RatioValue const &angleChangeRatio, std::shared_ptr<helpers::RssLogger> &mRssLogger) const
 {
   ad::physics::Distance distance;
   auto result = situation::calculateAcceleratedLimitedMovement(
-    currentPoint.speed, dynamics.maxSpeedOnAcceleration, acceleration, duration, currentPoint.speed, distance);
+    currentPoint.speed, dynamics.maxSpeedOnAcceleration, acceleration, duration, currentPoint.speed, distance, mRssLogger);
 
   calculateTrajectoryPoint(currentPoint, dynamics, distance, angleChangeRatio);
   return result;
