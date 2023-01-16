@@ -87,9 +87,51 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
 
     for (auto const &currentState : currentStateSnapshot.individualResponses)
     {
+      if(currentState.situationType != situation::SituationType::Unstructured)
+      {
       response.isSafeLongitudinal &= currentState.longitudinalState.isSafe;
       response.isSafeLateralRight &= currentState.lateralStateRight.isSafe;
       response.isSafeLateralLeft &= currentState.lateralStateLeft.isSafe;
+      }
+
+      mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Is current state dangerous: " + std::to_string(isDangerous(currentState)));
+      if(currentState.situationType == situation::SituationType::Unstructured)
+      {
+        mRssLogger_->logError("Situation type: Unstructured");
+      }
+      if (currentState.situationType == situation::SituationType::SameDirection)
+      {
+        mRssLogger_->logError("Situation type: SameDirection");
+      }
+      if (currentState.situationType == situation::SituationType::OppositeDirection)
+      {
+        mRssLogger_->logError("Situation type: OppositeDirection");
+      }
+      if (currentState.situationType == situation::SituationType::IntersectionEgoHasPriority)
+      {
+        mRssLogger_->logError("Situation type: IntersectionEgoHasPriority");
+      }
+      if (currentState.situationType == situation::SituationType::IntersectionObjectHasPriority)
+      {
+        mRssLogger_->logError("Situation type: IntersectionObjectHasPriority");
+      }
+      if (currentState.situationType == situation::SituationType::IntersectionSamePriority)
+      {
+        mRssLogger_->logError("Situation type: IntersectionSamePriority");
+      }
+      
+
+      if(currentState.situationType != situation::SituationType::Unstructured)
+      {
+      
+      mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Is safe longitudinal: " + std::to_string(currentState.longitudinalState.isSafe));
+      mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Is safe lateral right: " + std::to_string(currentState.lateralStateRight.isSafe));
+      mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Is safe lateral left: " + std::to_string(currentState.lateralStateLeft.isSafe));
+      }
+      else
+      {
+        mRssLogger_->logError("RssResponseResolving::provideProperResponse>> Is safe unstructured: " + std::to_string(currentState.unstructuredSceneState.isSafe));
+      }
 
       if (isDangerous(currentState))
       {
@@ -104,7 +146,6 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
 
         if (currentState.situationType == situation::SituationType::Unstructured)
         {
-          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> The state is dangerous, state type is Unstructured: ", currentState);
           combineState(currentState.unstructuredSceneState,
                        driveAwayBrakeMin,
                        unstructuredDriveAwayToBrakeTransitionOccurred,
@@ -114,8 +155,6 @@ bool RssResponseResolving::provideProperResponse(state::RssStateSnapshot const &
         }
         else // structured
         {
-          mRssLogger_->logError("RssResponseResolving::provideProperResponse>> The state is dangerous, state type is " + std::to_string(currentState.situationType)+ " : ", currentState);
-
           combineState(currentState.longitudinalState,
                        response.longitudinalResponse,
                        response.accelerationRestrictions.longitudinalRange);
