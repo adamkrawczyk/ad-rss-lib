@@ -7,6 +7,7 @@
 // ----------------- END LICENSE BLOCK -----------------------------------
 
 #include "RssStructuredSceneNonIntersectionChecker.hpp"
+#include "ad/rss/logging/ExtendedSituationData.hpp"
 #include "ad/rss/situation/RssFormulas.hpp"
 #include "ad/rss/state/RssStateOperation.hpp"
 
@@ -24,6 +25,9 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
     mNewStatesBeforeDangerThresholdTime.clear();
     mCurrentTimeIndex = timeIndex;
   }
+
+  auto & extended_situation_data = logging::ExtendedSituationData::getInstance();
+  logging::SituationData situation_data;
 
   rssState.situationId = situation.situationId;
   rssState.situationType = situation.situationType;
@@ -45,10 +49,14 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
   // first calculate the current state
   if (situation.situationType == situation::SituationType::SameDirection)
   {
+    situation_data.situation_type_id = logging::SituationTypeId::SameDirection;
+    situation_data.situation_type = "SameDirection";
     result = calculateRssStateSameDirection(situation, rssState);
   }
   else if (situation.situationType == situation::SituationType::OppositeDirection)
   {
+    situation_data.situation_type_id = logging::SituationTypeId::OppositeDirection;
+    situation_data.situation_type = "OppositeDirection";
     result = calculateRssStateOppositeDirection(situation, rssState);
   }
   else
@@ -131,6 +139,12 @@ bool RssStructuredSceneNonIntersectionChecker::calculateRssStateNonIntersection(
     }
   }
 
+  situation_data.setSituationData(logging::DataNonIntersection::getInstance());
+  situation_data.is_safe = isDangerous(rssState);
+  situation_data.object_id = static_cast<int>(situation.objectId);
+  situation_data.object_name = "Unknown";
+  extended_situation_data.situation_data.push_back(situation_data);
+
   return result;
 }
 
@@ -160,11 +174,14 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
   Situation const &situation, state::LongitudinalRssState &rssState)
 {
   bool result = false;
+  auto & data_non_intersection = logging::DataNonIntersection::getInstance();
+  data_non_intersection.longitudinal_relative_position_id = logging::to_underlying(situation.relativePosition.longitudinalPosition);
 
   rssState.response = state::LongitudinalResponse::BrakeMin;
   rssState.rssStateInformation.currentDistance = situation.relativePosition.longitudinalDistance;
 
   bool isSafe = false;
+
 
   if ((LongitudinalRelativePosition::InFront == situation.relativePosition.longitudinalPosition)
       || (LongitudinalRelativePosition::OverlapFront == situation.relativePosition.longitudinalPosition))
@@ -179,6 +196,10 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
                                                         situation.relativePosition.longitudinalDistance,
                                                         rssState.rssStateInformation.safeDistance,
                                                         isSafe);
+
+    data_non_intersection.longitudinal_relative_position = "EGO in front";
+    data_non_intersection.longitudinal_current_distance = static_cast<double>(situation.relativePosition.longitudinalDistance);
+    data_non_intersection.longitudinal_safe_distance = static_cast<double>(rssState.rssStateInformation.safeDistance);
   }
   else
   {
@@ -189,6 +210,10 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLongitudinalRssStateSame
                                                         situation.relativePosition.longitudinalDistance,
                                                         rssState.rssStateInformation.safeDistance,
                                                         isSafe);
+
+    data_non_intersection.longitudinal_relative_position = "Other in front";
+    data_non_intersection.longitudinal_current_distance = static_cast<double>(situation.relativePosition.longitudinalDistance);
+    data_non_intersection.longitudinal_safe_distance = static_cast<double>(rssState.rssStateInformation.safeDistance);
   }
 
   rssState.isSafe = isSafe;
@@ -253,6 +278,10 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
   bool isDistanceSafe = false;
 
   bool result = false;
+
+  auto & data_non_intersection = logging::DataNonIntersection::getInstance();
+  data_non_intersection.lateral_relative_position_id = logging::to_underlying(situation.relativePosition.lateralPosition);
+
   if (LateralRelativePosition::AtLeft == situation.relativePosition.lateralPosition)
   {
     rssStateLeft.rssStateInformation.evaluator = state::RssStateEvaluator::None;
@@ -267,6 +296,10 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
                                       situation.relativePosition.lateralDistance,
                                       rssStateRight.rssStateInformation.safeDistance,
                                       isDistanceSafe);
+
+    data_non_intersection.lateral_relative_position = "EGO at left";
+    data_non_intersection.lateral_left_current_distance = static_cast<double>(situation.relativePosition.lateralDistance);
+    data_non_intersection.lateral_left_safe_distance = static_cast<double>(rssStateRight.rssStateInformation.safeDistance);
   }
   else if (LateralRelativePosition::AtRight == situation.relativePosition.lateralPosition)
   {
@@ -282,6 +315,9 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
                                       situation.relativePosition.lateralDistance,
                                       rssStateLeft.rssStateInformation.safeDistance,
                                       isDistanceSafe);
+    data_non_intersection.lateral_relative_position = "EGO at right";
+    data_non_intersection.lateral_right_current_distance = static_cast<double>(situation.relativePosition.lateralDistance);
+    data_non_intersection.lateral_right_safe_distance = static_cast<double>(rssStateLeft.rssStateInformation.safeDistance);
   }
   else
   {
@@ -291,6 +327,10 @@ bool RssStructuredSceneNonIntersectionChecker::calculateLateralRssState(Situatio
     rssStateRight.rssStateInformation.evaluator = state::RssStateEvaluator::LateralDistance;
     rssStateRight.rssStateInformation.currentDistance = physics::Distance(0);
     rssStateRight.rssStateInformation.safeDistance = physics::Distance(0);
+
+    data_non_intersection.lateral_relative_position = "EGO in overlap";
+    data_non_intersection.lateral_left_current_distance = 0;
+    data_non_intersection.lateral_right_current_distance = 0;
 
     // lateral distance is zero, never safe
     result = true;

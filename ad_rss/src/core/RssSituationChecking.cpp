@@ -12,6 +12,7 @@
 #include "../situation/RssStructuredSceneIntersectionChecker.hpp"
 #include "../situation/RssStructuredSceneNonIntersectionChecker.hpp"
 #include "../situation/RssUnstructuredSceneChecker.hpp"
+#include "ad/rss/logging/ExtendedSituationData.hpp"
 #include "ad/rss/situation/SituationSnapshotValidInputRange.hpp"
 #include "spdlog/fmt/ostr.h"
 #include "spdlog/spdlog.h"
@@ -110,34 +111,35 @@ bool RssSituationChecking::checkSituationInputRangeChecked(situation::Situation 
                                    situation.egoVehicleState.dynamics,
                                    IsSafe::No);
 
-    switch (situation.situationType)
+    if(situation.situationType == situation::SituationType::NotRelevant)
     {
-      case situation::SituationType::NotRelevant:
-        rssState = createRssState(situation.situationId,
-                                  situation.situationType,
-                                  situation.objectId,
-                                  situation.egoVehicleState.dynamics,
-                                  IsSafe::Yes);
-        result = true;
-        break;
-      case situation::SituationType::SameDirection:
-      case situation::SituationType::OppositeDirection:
-        result = mNonIntersectionChecker->calculateRssStateNonIntersection(mCurrentTimeIndex, situation, rssState);
-        break;
-
-      case situation::SituationType::IntersectionEgoHasPriority:
-      case situation::SituationType::IntersectionObjectHasPriority:
-      case situation::SituationType::IntersectionSamePriority:
-        result = mIntersectionChecker->calculateRssStateIntersection(mCurrentTimeIndex, situation, rssState);
-        break;
-      case situation::SituationType::Unstructured:
-        result = mUnstructuredSceneChecker->calculateRssStateUnstructured(
-          mCurrentTimeIndex, situation, rssStateSnapshot.unstructuredSceneEgoInformation, rssState);
-        break;
-      default:
-        spdlog::error("RssSituationChecking::checkSituationInputRangeChecked>> Invalid situation type {}", situation);
-        result = false;
-        break;
+      rssState = createRssState(situation.situationId,
+                                situation.situationType,
+                                situation.objectId,
+                                situation.egoVehicleState.dynamics,
+                                IsSafe::Yes);
+      result = true;
+    }
+    else if(situation.situationType == situation::SituationType::SameDirection ||
+            situation.situationType == situation::SituationType::OppositeDirection)
+    {
+      result = mNonIntersectionChecker->calculateRssStateNonIntersection(mCurrentTimeIndex, situation, rssState);
+    }
+    else if(situation.situationType == situation::SituationType::IntersectionEgoHasPriority ||
+            situation.situationType == situation::SituationType::IntersectionObjectHasPriority ||
+            situation.situationType == situation::SituationType::IntersectionSamePriority)
+    {
+      result = mIntersectionChecker->calculateRssStateIntersection(mCurrentTimeIndex, situation, rssState);
+    }
+    else if(situation.situationType == situation::SituationType::Unstructured)
+    {
+      result = mUnstructuredSceneChecker->calculateRssStateUnstructured(
+        mCurrentTimeIndex, situation, rssStateSnapshot.unstructuredSceneEgoInformation, rssState);
+    }
+    else
+    {
+      spdlog::error("RssSituationChecking::checkSituationInputRangeChecked>> Invalid situation type {}", situation);
+      result = false;
     }
 
     if (result)
