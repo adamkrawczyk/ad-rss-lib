@@ -44,6 +44,8 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
                                        state::ProperResponse &properResponse)
 {
   bool result = false;
+  auto & extended_situation_data = logging::ExtendedSituationData::getInstance();
+  extended_situation_data.clear();
   // global try catch block to ensure this library call doesn't throw an exception
   try
   {
@@ -53,9 +55,6 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
       spdlog::critical("RssCheck::calculateProperResponse>> object not properly initialized");
       return false;
     }
-    
-    auto & extended_situation_data = logging::ExtendedSituationData::getInstance();
-    extended_situation_data.clear();
 
     result = mSituationExtraction->extractSituations(worldModel, situationSnapshot);
 
@@ -76,6 +75,7 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
     result = false;
   }
   // LCOV_EXCL_STOP: unreachable code, keep to be on the safe side
+  extended_situation_data.is_evaluation_successful = result;
   return result;
 }
 
@@ -85,24 +85,6 @@ bool RssCheck::calculateProperResponse(world::WorldModel const &worldModel, stat
   state::RssStateSnapshot rssStateSnapshot;
 
   return calculateProperResponse(worldModel, situationSnapshot, rssStateSnapshot, properResponse);
-}
-
-logging::ExtendedSituationData & RssCheck::calculateProperResponse(world::WorldModel const &worldModel,
-                               situation::SituationSnapshot &situationSnapshot,
-                               state::RssStateSnapshot &rssStateSnapshot,
-                               state::ProperResponse &properResponse,
-                               bool dummy)
-{
-  // suppress dummy 
-  (void)dummy;
-
-
- bool result = calculateProperResponse(worldModel,situationSnapshot,rssStateSnapshot,properResponse);
- (void)result;
-
- auto & extended_situation_data = logging::ExtendedSituationData::getInstance();
- return extended_situation_data;
-
 }
 
 } // namespace core

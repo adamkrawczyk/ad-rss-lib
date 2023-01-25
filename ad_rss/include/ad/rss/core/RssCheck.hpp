@@ -94,12 +94,6 @@ public:
                                state::RssStateSnapshot &rssStateSnapshot,
                                state::ProperResponse &properResponse,
                                std::string &issueDescription);
-  
-  logging::ExtendedSituationData & calculateProperResponse(world::WorldModel const &worldModel,
-                               situation::SituationSnapshot &situationSnapshot,
-                               state::RssStateSnapshot &rssStateSnapshot,
-                               state::ProperResponse &properResponse,
-                               bool dummy);
 
 private:
   std::unique_ptr<RssResponseResolving> mResponseResolving;
