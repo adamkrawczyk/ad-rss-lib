@@ -30,21 +30,68 @@ void ExtendedSituationData::setSituationData(SituationData &situation)
   this->situation_data.push_back(situation);
 }
 
-// SituationData
-
-void SituationData::setSituationData(DataIntersection &data_variant)
+SituationData &ExtendedSituationData::safeGetLastSituationDataElement()
 {
-  data_variant_ = &data_variant;
+  if (situation_data.empty())
+  {
+    SituationData sd = SituationData();
+    situation_data.push_back(sd);
+  }
+  return situation_data.back();
 }
 
-void SituationData::setSituationData(DataNonIntersection &data_variant)
+DataIntersection &SituationData::getDataIntersection()
 {
-  data_variant_ = &data_variant;
+  if (data_intersection_.has_value())
+  {
+    return data_intersection_.value();
+  }
+  else
+  {
+    data_intersection_ = DataIntersection();
+    return data_intersection_.value();
+  }
 }
 
-void SituationData::setSituationData(DataUnstructured &data_variant)
+DataNonIntersection &SituationData::getDataNonIntersection()
 {
-  data_variant_ = &data_variant;
+  if (data_non_intersection_.has_value())
+  {
+    return data_non_intersection_.value();
+  }
+  else
+  {
+    data_non_intersection_ = DataNonIntersection();
+    return data_non_intersection_.value();
+  }
+}
+
+DataUnstructured &SituationData::getDataUnstructured()
+{
+  if (data_unstructured_.has_value())
+  {
+    return data_unstructured_.value();
+  }
+  else
+  {
+    data_unstructured_ = DataUnstructured();
+    return data_unstructured_.value();
+  }
+}
+
+void SituationData::setDataIntersection(DataIntersection data)
+{
+  data_intersection_ = data;
+}
+
+void SituationData::setDataNonIntersection(DataNonIntersection data)
+{
+  data_non_intersection_ = data;
+}
+
+void SituationData::setDataUnstructured(DataUnstructured data)
+{
+  data_unstructured_ = data;
 }
 
 } // namespace logging
