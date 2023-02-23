@@ -96,9 +96,9 @@ struct DataUnstructured
   bool is_safe_brake_both;
 
   // Related to unsafe situation
-  bool if_unsafe_are_both_car_at_full_stop = false;
-  bool if_unsafe_other_is_moving_ego_continue_forward = false;
-  bool if_unsafe_other_is_stopped_ego_drive_away = false;
+  bool are_both_car_at_full_stop = false;
+  bool other_is_moving_ego_continue_forward = false;
+  bool other_is_stopped_ego_drive_away = false;
 };
 
 /*!

@@ -232,7 +232,7 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
     {
       spdlog::debug("Situation {} Rule 1: both stopped, unsafe distance -> drive away.", situation.situationId);
       mode = DrivingMode::DriveAway;
-      data_unstructured.if_unsafe_are_both_car_at_full_stop = true;
+      data_unstructured.are_both_car_at_full_stop = true;
     }
 
     // Rule 2: If:
@@ -245,13 +245,13 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
       {
         spdlog::debug("Situation {} Rule 2: opponent is moving -> continue forward", situation.situationId);
         mode = DrivingMode::ContinueForward;
-        data_unstructured.if_unsafe_other_is_moving_ego_continue_forward = true;
+        data_unstructured.other_is_moving_ego_continue_forward = true;
       }
       else
       {
         spdlog::debug("Situation {} Rule 2: opponent is stopped -> drive away", situation.situationId);
         mode = DrivingMode::DriveAway;
-        data_unstructured.if_unsafe_other_is_stopped_ego_drive_away = true;
+        data_unstructured.other_is_stopped_ego_drive_away = true;
       }
     }
 
