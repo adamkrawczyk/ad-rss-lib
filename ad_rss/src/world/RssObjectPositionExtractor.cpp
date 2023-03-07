@@ -59,6 +59,8 @@ bool RssObjectPositionExtractor::newLaneSegment(MetricRange lateralDistance, Lan
 
       Distance lonMinPosition
         = mCurrentLongitudinalMin + (objectSegment->lonRange.minimum * laneSegment.length.minimum);
+      spdlog::error("lonMinPosition: {}, mCurrentLongitudinalMin: {}, objectSegment->lonRange.minimum: {}, laneSegment.length.minimum: {}", lonMinPosition, mCurrentLongitudinalMin, objectSegment->lonRange.minimum, laneSegment.length.minimum);
+      spdlog::info("lane segment id {}", laneSegment.id);
       Distance lonMaxPosition
         = mCurrentLongitudinalMax + (objectSegment->lonRange.maximum * laneSegment.length.maximum);
 
@@ -67,8 +69,10 @@ bool RssObjectPositionExtractor::newLaneSegment(MetricRange lateralDistance, Lan
       mObjectDimensions.lateralDimensions.maximum
         = std::max(mObjectDimensions.lateralDimensions.maximum, latMaxPosition);
 
-      mObjectDimensions.longitudinalDimensions.minimum
-        = std::min(mObjectDimensions.longitudinalDimensions.minimum, lonMinPosition);
+      // mObjectDimensions.longitudinalDimensions.minimum = lonMinPosition;
+      mObjectDimensions.longitudinalDimensions.minimum = std::min(mObjectDimensions.longitudinalDimensions.minimum, lonMinPosition);
+      spdlog::error("Longitudinal lonMin Dimension: {}", mObjectDimensions.longitudinalDimensions.minimum);
+      spdlog::error("Longitudinal lonMinPosition: {}", lonMinPosition);
       mObjectDimensions.longitudinalDimensions.maximum
         = std::max(mObjectDimensions.longitudinalDimensions.maximum, lonMaxPosition);
 
@@ -81,6 +85,9 @@ bool RssObjectPositionExtractor::newLaneSegment(MetricRange lateralDistance, Lan
       {
         mObjectDimensions.onNegativeLane = true;
       }
+
+      spdlog::error("Longitudinal distance max: {}", mObjectDimensions.longitudinalDimensions.maximum);
+      spdlog::error("Longitudinal distance min: {}", mObjectDimensions.longitudinalDimensions.minimum);
 
       mOccupiedRegions.erase(objectSegment);
     }

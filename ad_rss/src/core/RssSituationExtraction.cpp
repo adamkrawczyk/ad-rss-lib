@@ -70,6 +70,12 @@ void RssSituationExtraction::calcluateRelativeLongitudinalPosition(
       longitudinalPosition = situation::LongitudinalRelativePosition::Overlap;
     }
   }
+    spdlog::error("Longitudinal distance: {}", longitudinalDistance);
+    spdlog::error("Longitudinal distance test: {}", otherMetricRange.minimum - egoMetricRange.maximum);
+    spdlog::error("egoMetricRange.minimum: {}", egoMetricRange.minimum);
+    spdlog::error("egoMetricRange.maximum: {}", egoMetricRange.maximum);
+    spdlog::error("otherMetricRange.minimum: {}", otherMetricRange.minimum);
+    spdlog::error("otherMetricRange.maximum: {}", otherMetricRange.maximum);
 }
 
 void RssSituationExtraction::calcluateRelativeLongitudinalPositionIntersection(
@@ -154,6 +160,8 @@ bool RssSituationExtraction::convertObjectsNonIntersection(world::Scene const &c
   world::ObjectDimensions egoVehicleDimension;
   world::ObjectDimensions objectToBeCheckedDimension;
   result = calculateObjectDimensions(currentScene, egoVehicleDimension, objectToBeCheckedDimension);
+  spdlog::error("Object to be checked min: {}", objectToBeCheckedDimension.longitudinalDimensions.minimum);
+  spdlog::error("Object to be checked max: {}", objectToBeCheckedDimension.longitudinalDimensions.maximum);
 
   situation::LongitudinalRelativePosition longitudinalPosition;
   Distance longitudinalDistance;

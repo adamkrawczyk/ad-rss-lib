@@ -154,6 +154,11 @@ bool calculateObjectDimensions(std::vector<Object> const &objects,
             object.objectId);
           return false;
         }
+        for(const auto &occupiedRegion : object.occupiedRegions)
+        {
+          spdlog::error(" min dist: {}", occupiedRegion.lonRange.minimum);
+          spdlog::error(" max dist: {}", occupiedRegion.lonRange.maximum);
+        }
         extractors.push_back(RssObjectPositionExtractor(object.occupiedRegions));
       }
 
@@ -185,12 +190,16 @@ bool calculateObjectDimensions(std::vector<Object> const &objects,
 
           longitudinalDistanceMax = std::max(longitudinalDistanceMax, (*roadSegment)[i].length.maximum);
           longitudinalDistanceMin = std::min(longitudinalDistanceMin, (*roadSegment)[i].length.minimum);
+          spdlog::error(" getting min dist from longitudinalDistanceMin: {} and roadSegment[i].length.minimum: {}, i: {}",
+                        longitudinalDistanceMin, (*roadSegment)[i].length.minimum, i);
         }
 
         if (result)
         {
           longitudinalDimensions.maximum += longitudinalDistanceMax;
+          spdlog::error(" Distances minimum: {} and min dist: {}", longitudinalDimensions.minimum, longitudinalDistanceMin);
           longitudinalDimensions.minimum += longitudinalDistanceMin;
+          spdlog::error(" Resulting minimum: {}", longitudinalDimensions.minimum);
         }
       }
 
