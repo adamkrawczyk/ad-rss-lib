@@ -11,6 +11,7 @@
 #include <limits>
 #include "../unstructured/TrajectoryPedestrian.hpp"
 #include "../unstructured/TrajectoryVehicle.hpp"
+#include "ad/rss/logging/ExtendedSituationData.hpp"
 #include "ad/rss/situation/Physics.hpp"
 #include "ad/rss/situation/RssFormulas.hpp"
 #include "ad/rss/unstructured/Geometry.hpp"
@@ -71,6 +72,12 @@ bool RssUnstructuredSceneChecker::calculateRssStateUnstructured(world::TimeIndex
                                                                 state::RssState &rssState)
 {
   bool result = true;
+  auto &extended_situation_data = logging::ExtendedSituationData::getInstance();
+  extended_situation_data.situation_data.push_back(logging::SituationData());
+  logging::SituationData &situation_data = extended_situation_data.safeGetLastSituationDataElement();
+  situation_data.setDataUnstructured(logging::DataUnstructured());
+  situation_data.situation_type_id = logging::SituationTypeId::Unstructured;
+  situation_data.situation_type = "Unstructured";
 
   if (timeIndex != mCurrentTimeIndex)
   {
@@ -153,6 +160,9 @@ bool RssUnstructuredSceneChecker::calculateRssStateUnstructured(world::TimeIndex
       }
     }
   }
+  situation_data.is_safe = rssState.unstructuredSceneState.isSafe;
+  situation_data.object_id = static_cast<int>(situation.objectId);
+  situation_data.object_name = "Unknown";
   return result;
 }
 
@@ -166,6 +176,9 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
   auto const &egoContinueForward = egoStateInfo.continueForwardTrajectorySet;
   auto const &otherBrake = otherStateInfo.brakeTrajectorySet;
   auto const &otherContinueForward = otherStateInfo.continueForwardTrajectorySet;
+
+  auto &extended_situation_data = logging::ExtendedSituationData::getInstance();
+  auto &data_unstructured = extended_situation_data.safeGetLastSituationDataElement().getDataUnstructured();
 
   if (egoBrake.empty() || egoContinueForward.empty() || otherBrake.empty() || otherContinueForward.empty())
   {
@@ -183,6 +196,9 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
   bool isSafeBrakeBoth = !egoBrakeOtherBrakeOverlap;
 
   auto isSafe = isSafeEgoMustBrake || isSafeOtherMustBrake || isSafeBrakeBoth;
+  data_unstructured.is_safe_ego_must_brake = isSafeEgoMustBrake;
+  data_unstructured.is_safe_other_must_brake = isSafeOtherMustBrake;
+  data_unstructured.is_safe_brake_both = isSafeBrakeBoth;
 
   spdlog::trace("Situation {} safe check: isSafeEgoMustBrake: {}, isSafeOtherMustBrake: {}, isSafeBrakeBoth: {}",
                 situation.situationId,
@@ -216,6 +232,7 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
     {
       spdlog::debug("Situation {} Rule 1: both stopped, unsafe distance -> drive away.", situation.situationId);
       mode = DrivingMode::DriveAway;
+      data_unstructured.are_both_car_at_full_stop = true;
     }
 
     // Rule 2: If:
@@ -228,11 +245,13 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
       {
         spdlog::debug("Situation {} Rule 2: opponent is moving -> continue forward", situation.situationId);
         mode = DrivingMode::ContinueForward;
+        data_unstructured.other_is_moving_ego_continue_forward = true;
       }
       else
       {
         spdlog::debug("Situation {} Rule 2: opponent is stopped -> drive away", situation.situationId);
         mode = DrivingMode::DriveAway;
+        data_unstructured.other_is_stopped_ego_drive_away = true;
       }
     }
 
@@ -273,6 +292,8 @@ bool RssUnstructuredSceneChecker::calculateState(Situation const &situation,
       break;
   }
 
+  data_unstructured.unstructured_response = std::to_string(rssState.response);
+  data_unstructured.unstructured_response_id = static_cast<int>(rssState.response);
   return result;
 }
 
